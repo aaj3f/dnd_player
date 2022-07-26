@@ -1,0 +1,16 @@
+---
+character:
+  name: Osswald
+  level: 4
+  background: Urchin
+  race: Human
+  class: Monk
+  stats:
+    - Str: 10
+    - Dex: 18
+    - Con: 14
+    - Int: 8
+    - Wis: 16
+    - Chr: 8
+created_at: 'Fri Nov 28 12:00:09 2014'
+updated_at: 'Fasdf'

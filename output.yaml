@@ -1,0 +1,27 @@
+---
+character:
+  name: Osswald
+  level: 4
+  background: Urchin
+  race: Human
+  class:
+    Monk: {}
+  stats:
+    - Str: 10
+    - Dex: 18
+    - Con: 14
+    - Int: 8
+    - Wis: 16
+    - Chr: 8
+  status:
+    armor_class: 12
+    conditions: None
+    blessed: false
+    initiative: 4
+    hit_dice: d8
+    current_hp: 10
+    maximum_hp: 10
+    speed: 30
+created_at: "2022-02-16T20:39:43.002497Z"
+updated_at: "2022-02-16T20:39:43.002506Z"
+last_played_at: "2022-02-16T20:39:43.002507Z"
