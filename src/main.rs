@@ -6,8 +6,9 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
     ExecutableCommand,
 };
-use data::classes::{Class, MonkClass};
+use data::classes::*;
 use data::names;
+use data::races::*;
 use rand::prelude::*;
 use rand::seq::SliceRandom;
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
@@ -38,57 +39,6 @@ struct Point {
 }
 
 type MatchResult<T> = Result<T, ParseError>;
-
-#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
-#[strum(ascii_case_insensitive)]
-enum Race {
-    Dwarf(Dwarf),
-    Elf(Elf),
-    Halfling(Halfling),
-    Human(Human),
-    Dragonborn,
-    Gnome(Gnome),
-    #[strum(serialize = "half elf", serialize = "halfelf", serialize = "half-elf")]
-    HalfElf,
-    #[strum(serialize = "half orc", serialize = "halforc", serialize = "half-orc")]
-    HalfOrc,
-    Tiefling,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
-enum Dwarf {
-    #[default]
-    HillDwarf,
-    MountainDwarf,
-}
-#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
-enum Elf {
-    #[default]
-    DarkElf,
-    HighElf,
-    WoodElf,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
-enum Halfling {
-    #[default]
-    Lightfoot,
-    Stout,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
-enum Human {
-    #[default]
-    Standard,
-    Variant,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
-enum Gnome {
-    #[default]
-    Forest,
-    Rock,
-}
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
 #[strum(ascii_case_insensitive)]
