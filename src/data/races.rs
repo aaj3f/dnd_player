@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter, EnumString};
 
+use crate::{choose_value, Choosable};
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
 #[strum(ascii_case_insensitive)]
 pub enum Race {
@@ -50,4 +52,14 @@ pub enum Gnome {
     #[default]
     Forest,
     Rock,
+}
+
+impl Choosable<Race> for Race {
+    fn choose() -> Race {
+        choose_value(
+            "\nWhat is your character's race?",
+            "Dwarf, Elf, Halfling, Human, Dragonborn, Gnome, Half-Elf, Half-Orc, or Tiefling",
+            // race_match_string,
+        )
+    }
 }

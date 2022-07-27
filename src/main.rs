@@ -2,35 +2,27 @@ mod data;
 
 use chrono::prelude::*;
 use crossterm::{
-    event, execute,
-    style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
-    ExecutableCommand,
+    execute,
+    style::{Color, Print, ResetColor, SetForegroundColor},
 };
+use data::background::*;
+use data::character::*;
 use data::classes::*;
+use data::gender::*;
 use data::names;
 use data::races::*;
+use data::stats::*;
 use rand::prelude::*;
-use rand::seq::SliceRandom;
-use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_yaml;
+use std::fmt::Display;
 use std::{
-    cmp::Ordering,
-    collections::BTreeMap,
-    fmt::Error,
     fs,
     io::{self},
-    path,
     str::FromStr,
     thread, time,
 };
-use std::{fmt::Display, io::prelude::*};
-use strum::{IntoEnumIterator, ParseError};
-use strum_macros::{Display, EnumIter, EnumString};
-use term_table::{
-    row::Row,
-    table_cell::{Alignment, TableCell},
-    Table, TableStyle,
-};
+use strum::IntoEnumIterator;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct Point {
@@ -38,303 +30,8 @@ struct Point {
     y: f64,
 }
 
-type MatchResult<T> = Result<T, ParseError>;
-
-#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
-#[strum(ascii_case_insensitive)]
-enum Gender {
-    Male,
-    Female,
-    #[strum(
-        serialize = "non binary",
-        serialize = "nonbinary",
-        serialize = "non-binary"
-    )]
-    NonBinary,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-enum Stat {
-    Str(i8),
-    Dex(i8),
-    Con(i8),
-    Int(i8),
-    Wis(i8),
-    Chr(i8),
-}
-
-impl Stat {
-    fn display(&self) -> String {
-        let stat_val = match *self {
-            Stat::Str(val) => val,
-            Stat::Dex(val) => val,
-            Stat::Con(val) => val,
-            Stat::Int(val) => val,
-            Stat::Wis(val) => val,
-            Stat::Chr(val) => val,
-        };
-        let stat_modifier: i8 = match stat_val {
-            1 => -5,
-            2 | 3 => -4,
-            4 | 5 => -3,
-            6 | 7 => -2,
-            8 | 9 => -1,
-            10 | 11 => 0,
-            12 | 13 => 1,
-            14 | 15 => 2,
-            16 | 17 => 3,
-            18 | 19 => 4,
-            20 | 21 => 5,
-            22 | 23 => 6,
-            24 | 25 => 7,
-            26 | 27 => 8,
-            28 | 29 => 9,
-            30 => 10,
-            _ => 0,
-        };
-        let sign = match stat_modifier.cmp(&0) {
-            Ordering::Greater => "+",
-            _ => "",
-        };
-        format!("{}{}", sign, stat_modifier)
-    }
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
-#[strum(ascii_case_insensitive)]
-enum Background {
-    Acolyte,
-    Charlatan,
-    Criminal,
-    Entertainer,
-    #[strum(
-        serialize = "folk hero",
-        serialize = "folkhero",
-        serialize = "folk-hero"
-    )]
-    FolkHero,
-    #[strum(
-        serialize = "guild artisan",
-        serialize = "guildartisan",
-        serialize = "guild-artisan"
-    )]
-    GuildArtisan,
-    Hermit,
-    Noble,
-    Outlander,
-    Sailor,
-    Soldier,
-    Urchin,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-enum Condition {
-    None,
-    Poisoned,
-    //TODO: Continue to fill out
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-enum Dice {
-    D4,
-    D8,
-    D10,
-    D12,
-    D20,
-    D100,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-struct Status {
-    armor_class: u8,
-    conditions: Condition,
-    blessed: bool,
-    initiative: u8,
-    hit_dice: Dice,
-    current_hp: u8,
-    maximum_hp: u8,
-    speed: u16,
-}
-
 pub trait Choosable<T> {
     fn choose() -> T;
-}
-
-impl Choosable<Race> for Race {
-    fn choose() -> Race {
-        choose_value(
-            "\nWhat is your character's race?",
-            "Dwarf, Elf, Halfling, Human, Dragonborn, Gnome, Half-Elf, Half-Orc, or Tiefling",
-            // race_match_string,
-        )
-    }
-}
-
-impl Choosable<Gender> for Gender {
-    fn choose() -> Gender {
-        choose_value(
-            "\nWhat is your character's gender?",
-            "Male, Female, Non-Binary, None",
-            // gender_match_string,
-        )
-    }
-}
-
-impl Choosable<Class> for Class {
-    fn choose() -> Class {
-        choose_value("\nWhat is your character's class?", 
-        "Artificer, Barbarian, Bard, Cleric, Druid, Figher, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard", 
-        // class_match_string
-    )
-    }
-}
-
-impl Choosable<Background> for Background {
-    fn choose() -> Background {
-        choose_value(
-            "\nWhat is your character's background?",
-            "Acolyte, Charlatan, Criminal, Entertainer, Folk Hero, Guild Artisan,\nHermit, Noble, Outlander, Sailor, Soldier, or Urchin",
-            // background_match_string
-        )
-    }
-}
-
-impl Status {
-    pub fn new(_stats: &[Stat]) -> Status {
-        Status {
-            armor_class: 12,
-            conditions: Condition::None,
-            blessed: false,
-            initiative: 4,
-            hit_dice: Dice::D8,
-            current_hp: 10,
-            maximum_hp: 10,
-            speed: 30,
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-struct Character {
-    name: String,
-    level: u8,
-    background: Background,
-    race: Race,
-    class: Class,
-    stats: [Stat; 6],
-    status: Status,
-    gender: Gender,
-}
-
-impl Character {
-    pub fn display(&self, verbose: bool) {
-        let mut table = Table::new();
-        // table.max_column_width = 40;
-
-        table.style = TableStyle::extended();
-
-        if verbose {
-            table.add_row(Row::new(vec![TableCell::new_with_alignment(
-                "Character Sheet",
-                12,
-                Alignment::Center,
-            )]));
-
-            table.add_row(Row::new(vec![
-                TableCell::new_with_alignment("Name", 1, Alignment::Center),
-                TableCell::new_with_alignment(format!("{}", self.name), 11, Alignment::Left),
-            ]));
-
-            table.add_row(Row::new(vec![
-                TableCell::new_with_alignment("Gender", 1, Alignment::Center),
-                TableCell::new_with_alignment(format!("{}", self.gender), 11, Alignment::Left),
-            ]));
-            table.add_row(Row::new(vec![
-                TableCell::new_with_alignment("Race", 1, Alignment::Center),
-                TableCell::new_with_alignment(format!("{}", self.race), 11, Alignment::Left),
-            ]));
-
-            table.add_row(Row::new(vec![
-                TableCell::new_with_alignment("Class", 1, Alignment::Center),
-                TableCell::new_with_alignment(format!("{}", self.class), 11, Alignment::Left),
-            ]));
-
-            table.add_row(Row::new(vec![
-                TableCell::new_with_alignment("Level", 1, Alignment::Center),
-                TableCell::new_with_alignment(format!("{}", self.level), 11, Alignment::Left),
-            ]));
-
-            table.add_row(Row::new(vec![
-                TableCell::new_with_alignment("Background", 1, Alignment::Center),
-                TableCell::new_with_alignment(format!("{}", self.background), 11, Alignment::Left),
-            ]));
-
-            table.add_row(Row::new(vec![TableCell::new_with_col_span("", 12)]));
-        }
-
-        table.add_row(Row::new(vec![
-            TableCell::new_with_alignment("Character", 5, Alignment::Center),
-            TableCell::new(""),
-            TableCell::new_with_alignment("Stats", 6, Alignment::Center),
-        ]));
-
-        table.add_row(Row::new(vec![
-            TableCell::new_with_alignment("HP", 1, Alignment::Left),
-            TableCell::new_with_alignment("AC", 1, Alignment::Left),
-            TableCell::new_with_alignment("Speed", 1, Alignment::Left),
-            TableCell::new_with_alignment("Initiative", 1, Alignment::Left),
-            TableCell::new_with_alignment("Blessed", 1, Alignment::Left),
-            TableCell::new(""),
-            TableCell::new_with_alignment("STR", 1, Alignment::Right),
-            TableCell::new_with_alignment("DEX", 1, Alignment::Right),
-            TableCell::new_with_alignment("CON", 1, Alignment::Right),
-            TableCell::new_with_alignment("INT", 1, Alignment::Right),
-            TableCell::new_with_alignment("WIS", 1, Alignment::Right),
-            TableCell::new_with_alignment("CHR", 1, Alignment::Right),
-        ]));
-
-        let blessed_string = match self.status.blessed {
-            true => "+",
-            false => "-",
-        };
-
-        let stats_array: Vec<String> = self.stats.iter().map(|x| x.display()).collect();
-
-        table.add_row(Row::new(vec![
-            TableCell::new_with_alignment(
-                format!("{}/{}", self.status.current_hp, self.status.maximum_hp),
-                1,
-                Alignment::Center,
-            ),
-            TableCell::new_with_alignment(
-                format!("{}", self.status.armor_class),
-                1,
-                Alignment::Center,
-            ),
-            TableCell::new_with_alignment(format!("{}", self.status.speed), 1, Alignment::Center),
-            TableCell::new_with_alignment(
-                format!("{}", self.status.initiative),
-                1,
-                Alignment::Center,
-            ),
-            TableCell::new_with_alignment(format!("{}", blessed_string), 1, Alignment::Center),
-            TableCell::new(""),
-            TableCell::new_with_alignment(&stats_array[0], 1, Alignment::Center),
-            TableCell::new_with_alignment(&stats_array[1], 1, Alignment::Center),
-            TableCell::new_with_alignment(&stats_array[2], 1, Alignment::Center),
-            TableCell::new_with_alignment(&stats_array[3], 1, Alignment::Center),
-            TableCell::new_with_alignment(&stats_array[4], 1, Alignment::Center),
-            TableCell::new_with_alignment(&stats_array[5], 1, Alignment::Center),
-        ]));
-
-        table.add_row(Row::new(vec![TableCell::new_with_alignment(
-            format!("Status Conditions: None"),
-            12,
-            Alignment::Left,
-        )]));
-
-        println!("{}", table.render());
-    }
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -406,7 +103,7 @@ const RED: Color = Color::Rgb {
     b: 54,
 };
 
-fn choose_value<T>(
+pub fn choose_value<T>(
     string_one: &str,
     string_two: &str,
     // matcher: fn(&str) -> Result<T, std::fmt::Error>,

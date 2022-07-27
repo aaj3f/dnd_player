@@ -1,7 +1,7 @@
-use std::default;
-
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter, EnumString};
+
+use crate::{choose_value, Choosable};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
 #[strum(ascii_case_insensitive)]
@@ -19,6 +19,15 @@ pub enum Class {
     Sorcerer(Option<SorcererSubclass>),
     Warlock(Option<WarlockSubclass>),
     Wizard(Option<WizardSubclass>),
+}
+
+impl Choosable<Class> for Class {
+    fn choose() -> Class {
+        choose_value("\nWhat is your character's class?", 
+        "Artificer, Barbarian, Bard, Cleric, Druid, Figher, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard", 
+        // class_match_string
+    )
+    }
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
