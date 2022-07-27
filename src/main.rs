@@ -19,6 +19,7 @@ use std::{
     fs,
     io::{self},
     path,
+    slice::Join,
     str::FromStr,
     thread, time,
 };
@@ -42,17 +43,52 @@ type MatchResult<T> = Result<T, ParseError>;
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
 #[strum(ascii_case_insensitive)]
 enum Race {
-    Dwarf,
-    Elf,
-    Halfling,
-    Human,
+    Dwarf(Dwarf),
+    Elf(Elf),
+    Halfling(Halfling),
+    Human(Human),
     Dragonborn,
-    Gnome,
+    Gnome(Gnome),
     #[strum(serialize = "half elf", serialize = "halfelf", serialize = "half-elf")]
     HalfElf,
     #[strum(serialize = "half orc", serialize = "halforc", serialize = "half-orc")]
     HalfOrc,
     Tiefling,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
+enum Dwarf {
+    #[default]
+    HillDwarf,
+    MountainDwarf,
+}
+#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
+enum Elf {
+    #[default]
+    DarkElf,
+    HighElf,
+    WoodElf,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
+enum Halfling {
+    #[default]
+    Lightfoot,
+    Stout,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
+enum Human {
+    #[default]
+    Standard,
+    Variant,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
+enum Gnome {
+    #[default]
+    Forest,
+    Rock,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
@@ -242,46 +278,50 @@ struct Character {
 }
 
 impl Character {
-    pub fn display(&self) {
+    pub fn display(&self, verbose: bool) {
         let mut table = Table::new();
         // table.max_column_width = 40;
 
         table.style = TableStyle::extended();
 
-        table.add_row(Row::new(vec![TableCell::new_with_alignment(
-            "Character Sheet",
-            12,
-            Alignment::Center,
-        )]));
+        if verbose {
+            table.add_row(Row::new(vec![TableCell::new_with_alignment(
+                "Character Sheet",
+                12,
+                Alignment::Center,
+            )]));
 
-        table.add_row(Row::new(vec![
-            TableCell::new_with_alignment("Name", 1, Alignment::Center),
-            TableCell::new_with_alignment(format!("{}", self.name), 12, Alignment::Center),
-        ]));
+            table.add_row(Row::new(vec![
+                TableCell::new_with_alignment("Name", 1, Alignment::Center),
+                TableCell::new_with_alignment(format!("{}", self.name), 11, Alignment::Left),
+            ]));
 
-        table.add_row(Row::new(vec![
-            TableCell::new_with_alignment("Gender", 1, Alignment::Center),
-            TableCell::new_with_alignment(format!("{}", self.gender), 12, Alignment::Center),
-        ]));
-        table.add_row(Row::new(vec![
-            TableCell::new_with_alignment("Race", 1, Alignment::Center),
-            TableCell::new_with_alignment(format!("{}", self.race), 12, Alignment::Center),
-        ]));
+            table.add_row(Row::new(vec![
+                TableCell::new_with_alignment("Gender", 1, Alignment::Center),
+                TableCell::new_with_alignment(format!("{}", self.gender), 11, Alignment::Left),
+            ]));
+            table.add_row(Row::new(vec![
+                TableCell::new_with_alignment("Race", 1, Alignment::Center),
+                TableCell::new_with_alignment(format!("{}", self.race), 11, Alignment::Left),
+            ]));
 
-        table.add_row(Row::new(vec![
-            TableCell::new_with_alignment("Class", 1, Alignment::Center),
-            TableCell::new_with_alignment(format!("{}", self.class), 12, Alignment::Center),
-        ]));
+            table.add_row(Row::new(vec![
+                TableCell::new_with_alignment("Class", 1, Alignment::Center),
+                TableCell::new_with_alignment(format!("{}", self.class), 11, Alignment::Left),
+            ]));
 
-        table.add_row(Row::new(vec![
-            TableCell::new_with_alignment("Level", 1, Alignment::Center),
-            TableCell::new_with_alignment(format!("{}", self.level), 12, Alignment::Center),
-        ]));
+            table.add_row(Row::new(vec![
+                TableCell::new_with_alignment("Level", 1, Alignment::Center),
+                TableCell::new_with_alignment(format!("{}", self.level), 11, Alignment::Left),
+            ]));
 
-        table.add_row(Row::new(vec![
-            TableCell::new_with_alignment("Background", 1, Alignment::Center),
-            TableCell::new_with_alignment(format!("{}", self.background), 12, Alignment::Center),
-        ]));
+            table.add_row(Row::new(vec![
+                TableCell::new_with_alignment("Background", 1, Alignment::Center),
+                TableCell::new_with_alignment(format!("{}", self.background), 11, Alignment::Left),
+            ]));
+
+            table.add_row(Row::new(vec![TableCell::new_with_col_span("", 12)]));
+        }
 
         table.add_row(Row::new(vec![
             TableCell::new_with_alignment("Character", 5, Alignment::Center),
@@ -491,15 +531,15 @@ fn random_name_from_race_gender(race: &Race, gender: &Gender) -> String {
             Gender::Male => choose_and_stringify(names::DRAGONBORN_MALE),
             Gender::Female | Gender::NonBinary => choose_and_stringify(names::DRAGONBORN_FEMALE),
         },
-        Race::Dwarf => match gender {
+        Race::Dwarf(_) => match gender {
             Gender::Male => choose_and_stringify(names::DWARF_MALE),
             Gender::Female | Gender::NonBinary => choose_and_stringify(names::DWARF_FEMALE),
         },
-        Race::Elf => match gender {
+        Race::Elf(_) => match gender {
             Gender::Male => choose_and_stringify(names::ELF_MALE),
             Gender::Female | Gender::NonBinary => choose_and_stringify(names::ELF_FEMALE),
         },
-        Race::Halfling | Race::Gnome => match gender {
+        Race::Halfling(_) | Race::Gnome(_) => match gender {
             Gender::Male => choose_and_stringify(names::HALFLING_MALE),
             Gender::Female | Gender::NonBinary => choose_and_stringify(names::HALFLING_FEMALE),
         },
@@ -507,7 +547,7 @@ fn random_name_from_race_gender(race: &Race, gender: &Gender) -> String {
             Gender::Male => choose_and_stringify(names::HALFORC_MALE),
             Gender::Female | Gender::NonBinary => choose_and_stringify(names::HALFORC_FEMALE),
         },
-        Race::Human | Race::HalfElf => match gender {
+        Race::Human(_) | Race::HalfElf => match gender {
             Gender::Male => choose_and_stringify(names::HUMAN_MALE),
             Gender::Female | Gender::NonBinary => choose_and_stringify(names::HUMAN_FEMALE),
         },
@@ -570,6 +610,22 @@ fn choose_level() -> u8 {
     }
 }
 
+fn choose_subrace<T>(x: Vec<T>) -> Race
+where
+    T: std::fmt::Debug + Display,
+    // [T]: Join<>,
+{
+    println!("{:?}", x);
+    pretty_print(
+        "Your chosen race allows for the choice of a subrace.",
+        BLUE,
+        true,
+    );
+    pretty_print("Please choose from the following: ", BLUE, false);
+    pretty_print(&format!("{:?}", x), PURPLE, true);
+    Race::Dwarf(Dwarf::HillDwarf)
+}
+
 fn create_new_character() -> PlayObject {
     let one_second = time::Duration::from_secs(1);
     pretty_print(
@@ -581,6 +637,15 @@ fn create_new_character() -> PlayObject {
 
     let race = Race::choose();
     println!("RACE: {:?}", &race);
+
+    let race: Race = match race {
+        Race::Dwarf(_) => choose_subrace(Dwarf::iter().collect()),
+        Race::Elf(_) => choose_subrace(Elf::iter().collect()),
+        Race::Halfling(_) => choose_subrace(Halfling::iter().collect()),
+        Race::Human(_) => choose_subrace(Human::iter().collect()),
+        Race::Gnome(_) => choose_subrace(Gnome::iter().collect()),
+        _ => race,
+    };
 
     let gender = Gender::choose();
     println!("GENDER: {:?}", &gender);
@@ -605,6 +670,13 @@ fn create_new_character() -> PlayObject {
     // pretty_print("\nDo you want to enter your character's stats?", BLUE, true);
     // pretty_print("(press ENTER to default to 'NO'):", PURPLE, true);
     // thread::sleep(one_second);
+
+    /*
+    Have you already determined your character's stats, or would you like to use a stat calculator?
+    - ALREADY KNOW
+        Do you want to verify that you've correctly allocated
+    - CALCULATOR
+    */
 
     let stats = [
         Stat::Str(10),
@@ -666,8 +738,8 @@ fn main() -> Result<(), serde_yaml::Error> {
     //     last_played_at: Utc::now(),
     // };
 
-    // let data = fs::read_to_string("./test.yaml").expect("Unable to read file");
-    let data = fs::read_to_string("./bad_test.yaml").expect("Unable to read file");
+    let data = fs::read_to_string("./test.yaml").expect("Unable to read file");
+    // let data = fs::read_to_string("./bad_test.yaml").expect("Unable to read file");
     println!("{}", data);
 
     // let play_object: PlayObject =
@@ -684,7 +756,7 @@ fn main() -> Result<(), serde_yaml::Error> {
     // println!("{:?}", s);
     // fs::write("./output.yaml", &s).expect("Unable to write file");
 
-    play_object.character.display();
+    play_object.character.display(true);
     Ok(())
 }
 
