@@ -212,7 +212,7 @@ fn choose_name(race: &Race, gender: &Gender) -> String {
     match io::stdin().read_line(&mut name) {
         Ok(length) => {
             if length > 1 {
-                name
+                name.trim().to_owned()
             } else {
                 random_name_from_race_gender(&race, &gender)
             }
@@ -299,7 +299,7 @@ fn create_new_character() -> PlayObject {
     let name = choose_name(&race, &gender);
     println!("NAME: {}", &name);
 
-    let class = Class::choose();
+    let mut class = Class::choose();
     println!("CLASS: {:?}", &class);
 
     let background = Background::choose();
@@ -308,10 +308,11 @@ fn create_new_character() -> PlayObject {
     let level: u8 = choose_level();
     println!("LEVEL: {}", &level);
 
-    // pretty_print("\nWhat is your character's sub-class?", BLUE, true);
-    // pretty_print("(press ENTER to randomize):", PURPLE, true);
-    // thread::sleep(one_second);
-    //TODO: add subclass to PlayObject
+    if level > 2 {
+        class = class.choose_subclass();
+        thread::sleep(one_second);
+        //TODO: add subclass to PlayObject
+    }
 
     // pretty_print("\nDo you want to enter your character's stats?", BLUE, true);
     // pretty_print("(press ENTER to default to 'NO'):", PURPLE, true);
