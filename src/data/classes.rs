@@ -15,19 +15,19 @@ use crate::{choose_value, pretty_print, Choosable, BLUE, PURPLE, RED};
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
 #[strum(ascii_case_insensitive)]
 pub enum Class {
-    Artificer(Option<ArtificerSubclass>),
-    Barbarian(Option<BarbarianSubclass>),
-    Bard(Option<BardSubclass>),
-    Cleric(Option<ClericSubclass>),
-    Druid(Option<DruidSubclass>),
-    Fighter(Option<FighterSubclass>),
-    Monk(Option<MonkSubclass>),
-    Paladin(Option<PaladinSubclass>),
-    Ranger(Option<RangerSubclass>),
-    Rogue(Option<RogueSubclass>),
-    Sorcerer(Option<SorcererSubclass>),
-    Warlock(Option<WarlockSubclass>),
-    Wizard(Option<WizardSubclass>),
+    Artificer(ArtificerSubclass),
+    Barbarian(BarbarianSubclass),
+    Bard(BardSubclass),
+    Cleric(ClericSubclass),
+    Druid(DruidSubclass),
+    Fighter(FighterSubclass),
+    Monk(MonkSubclass),
+    Paladin(PaladinSubclass),
+    Ranger(RangerSubclass),
+    Rogue(RogueSubclass),
+    Sorcerer(SorcererSubclass),
+    Warlock(WarlockSubclass),
+    Wizard(WizardSubclass),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
@@ -52,6 +52,10 @@ pub trait StringJoin<T> {
     fn join_string() -> String;
 }
 
+pub trait HasSubclass<T> {
+    fn get_subclass(&self) -> String;
+}
+
 impl<T> StringJoin<T> for T
 where
     T: Display + IntoEnumIterator,
@@ -63,6 +67,18 @@ where
             .join(", ")
     }
 }
+
+// impl<T> HasSubclass<T> for T
+// where
+//     T: Display + IntoEnumIterator,
+// {
+//     fn get_subclass(&self) -> String {
+//         match self {
+//             Some(v) => v.to_string(),
+//             None => ""
+//         }
+//     }
+// }
 
 impl Choosable<Class> for Class {
     fn choose() -> Class {
@@ -140,7 +156,7 @@ impl Class {
                         let match_result = match self {
                             Self::Artificer(_) => {
                                 match ArtificerSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Artificer(Some(v)),
+                                    Ok(v) => Self::Artificer(v),
                                     Err(_) => {
                                         println!("Not an available option");
                                         continue;
@@ -149,7 +165,7 @@ impl Class {
                             }
                             Self::Barbarian(_) => {
                                 match BarbarianSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Barbarian(Some(v)),
+                                    Ok(v) => Self::Barbarian(v),
                                     Err(_) => {
                                         println!("Not an available option");
                                         continue;
@@ -157,21 +173,21 @@ impl Class {
                                 }
                             }
                             Self::Bard(_) => match BardSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Bard(Some(v)),
+                                Ok(v) => Self::Bard(v),
                                 Err(_) => {
                                     println!("Not an available option");
                                     continue;
                                 }
                             },
                             Self::Cleric(_) => match ClericSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Cleric(Some(v)),
+                                Ok(v) => Self::Cleric(v),
                                 Err(_) => {
                                     println!("Not an available option");
                                     continue;
                                 }
                             },
                             Self::Druid(_) => match DruidSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Druid(Some(v)),
+                                Ok(v) => Self::Druid(v),
                                 Err(_) => {
                                     println!("Not an available option");
                                     continue;
@@ -179,7 +195,7 @@ impl Class {
                             },
                             Self::Fighter(_) => {
                                 match FighterSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Fighter(Some(v)),
+                                    Ok(v) => Self::Fighter(v),
                                     Err(_) => {
                                         println!("Not an available option");
                                         continue;
@@ -187,7 +203,7 @@ impl Class {
                                 }
                             }
                             Self::Monk(_) => match MonkSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Monk(Some(v)),
+                                Ok(v) => Self::Monk(v),
                                 Err(_) => {
                                     println!("Not an available option");
                                     continue;
@@ -195,7 +211,7 @@ impl Class {
                             },
                             Self::Paladin(_) => {
                                 match PaladinSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Paladin(Some(v)),
+                                    Ok(v) => Self::Paladin(v),
                                     Err(_) => {
                                         println!("Not an available option");
                                         continue;
@@ -203,14 +219,14 @@ impl Class {
                                 }
                             }
                             Self::Ranger(_) => match RangerSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Ranger(Some(v)),
+                                Ok(v) => Self::Ranger(v),
                                 Err(_) => {
                                     println!("Not an available option");
                                     continue;
                                 }
                             },
                             Self::Rogue(_) => match RogueSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Rogue(Some(v)),
+                                Ok(v) => Self::Rogue(v),
                                 Err(_) => {
                                     println!("Not an available option");
                                     continue;
@@ -218,7 +234,7 @@ impl Class {
                             },
                             Self::Sorcerer(_) => {
                                 match SorcererSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Sorcerer(Some(v)),
+                                    Ok(v) => Self::Sorcerer(v),
                                     Err(_) => {
                                         println!("Not an available option");
                                         continue;
@@ -227,7 +243,7 @@ impl Class {
                             }
                             Self::Warlock(_) => {
                                 match WarlockSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Warlock(Some(v)),
+                                    Ok(v) => Self::Warlock(v),
                                     Err(_) => {
                                         println!("Not an available option");
                                         continue;
@@ -235,7 +251,7 @@ impl Class {
                                 }
                             }
                             Self::Wizard(_) => match WizardSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Wizard(Some(v)),
+                                Ok(v) => Self::Wizard(v),
                                 Err(_) => {
                                     println!("Not an available option");
                                     continue;
@@ -245,44 +261,44 @@ impl Class {
                         break match_result;
                     } else {
                         break match self {
-                            Self::Artificer(_) => Self::Artificer(Some(
-                                ArtificerSubclass::iter().choose(&mut rng).unwrap(),
-                            )),
-                            Self::Barbarian(_) => Self::Barbarian(Some(
-                                BarbarianSubclass::iter().choose(&mut rng).unwrap(),
-                            )),
+                            Self::Artificer(_) => {
+                                Self::Artificer(ArtificerSubclass::iter().choose(&mut rng).unwrap())
+                            }
+                            Self::Barbarian(_) => {
+                                Self::Barbarian(BarbarianSubclass::iter().choose(&mut rng).unwrap())
+                            }
                             Self::Bard(_) => {
-                                Self::Bard(Some(BardSubclass::iter().choose(&mut rng).unwrap()))
+                                Self::Bard(BardSubclass::iter().choose(&mut rng).unwrap())
                             }
                             Self::Cleric(_) => {
-                                Self::Cleric(Some(ClericSubclass::iter().choose(&mut rng).unwrap()))
+                                Self::Cleric(ClericSubclass::iter().choose(&mut rng).unwrap())
                             }
                             Self::Druid(_) => {
-                                Self::Druid(Some(DruidSubclass::iter().choose(&mut rng).unwrap()))
+                                Self::Druid(DruidSubclass::iter().choose(&mut rng).unwrap())
                             }
-                            Self::Fighter(_) => Self::Fighter(Some(
-                                FighterSubclass::iter().choose(&mut rng).unwrap(),
-                            )),
+                            Self::Fighter(_) => {
+                                Self::Fighter(FighterSubclass::iter().choose(&mut rng).unwrap())
+                            }
                             Self::Monk(_) => {
-                                Self::Monk(Some(MonkSubclass::iter().choose(&mut rng).unwrap()))
+                                Self::Monk(MonkSubclass::iter().choose(&mut rng).unwrap())
                             }
-                            Self::Paladin(_) => Self::Paladin(Some(
-                                PaladinSubclass::iter().choose(&mut rng).unwrap(),
-                            )),
+                            Self::Paladin(_) => {
+                                Self::Paladin(PaladinSubclass::iter().choose(&mut rng).unwrap())
+                            }
                             Self::Ranger(_) => {
-                                Self::Ranger(Some(RangerSubclass::iter().choose(&mut rng).unwrap()))
+                                Self::Ranger(RangerSubclass::iter().choose(&mut rng).unwrap())
                             }
                             Self::Rogue(_) => {
-                                Self::Rogue(Some(RogueSubclass::iter().choose(&mut rng).unwrap()))
+                                Self::Rogue(RogueSubclass::iter().choose(&mut rng).unwrap())
                             }
-                            Self::Sorcerer(_) => Self::Sorcerer(Some(
-                                SorcererSubclass::iter().choose(&mut rng).unwrap(),
-                            )),
-                            Self::Warlock(_) => Self::Warlock(Some(
-                                WarlockSubclass::iter().choose(&mut rng).unwrap(),
-                            )),
+                            Self::Sorcerer(_) => {
+                                Self::Sorcerer(SorcererSubclass::iter().choose(&mut rng).unwrap())
+                            }
+                            Self::Warlock(_) => {
+                                Self::Warlock(WarlockSubclass::iter().choose(&mut rng).unwrap())
+                            }
                             Self::Wizard(_) => {
-                                Self::Wizard(Some(WizardSubclass::iter().choose(&mut rng).unwrap()))
+                                Self::Wizard(WizardSubclass::iter().choose(&mut rng).unwrap())
                             }
                         };
                     }

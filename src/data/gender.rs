@@ -8,19 +8,14 @@ use crate::{choose_value, Choosable};
 pub enum Gender {
     Male,
     Female,
-    #[strum(
-        serialize = "non binary",
-        serialize = "nonbinary",
-        serialize = "non-binary"
-    )]
-    NonBinary,
+    None,
 }
 
 impl Choosable<Gender> for Gender {
     fn choose() -> Gender {
         choose_value(
             "\nWhat is your character's gender?",
-            "Male, Female, Non-Binary, None",
+            "Male, Female, None",
             // gender_match_string,
         )
     }

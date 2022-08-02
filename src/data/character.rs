@@ -91,9 +91,29 @@ impl Character {
                 TableCell::new_with_alignment(format!("{}", self.race), 11, Alignment::Left),
             ]));
 
+            let subclass = match &self.class {
+                Class::Artificer(v) => v.to_string(),
+                Class::Barbarian(v) => v.to_string(),
+                Class::Bard(v) => v.to_string(),
+                Class::Cleric(v) => v.to_string(),
+                Class::Druid(v) => v.to_string(),
+                Class::Fighter(v) => v.to_string(),
+                Class::Monk(v) => v.to_string(),
+                Class::Paladin(v) => v.to_string(),
+                Class::Ranger(v) => v.to_string(),
+                Class::Rogue(v) => v.to_string(),
+                Class::Sorcerer(v) => v.to_string(),
+                Class::Warlock(v) => v.to_string(),
+                Class::Wizard(v) => v.to_string(),
+            };
+
             table.add_row(Row::new(vec![
                 TableCell::new_with_alignment("Class", 1, Alignment::Center),
-                TableCell::new_with_alignment(format!("{}", self.class), 11, Alignment::Left),
+                TableCell::new_with_alignment(
+                    format!("{} ({})", self.class, subclass),
+                    11,
+                    Alignment::Left,
+                ),
             ]));
 
             table.add_row(Row::new(vec![
