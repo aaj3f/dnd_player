@@ -175,31 +175,31 @@ fn random_name_from_race_gender(race: &Race, gender: &Gender) -> String {
     match race {
         Race::Dragonborn => match gender {
             Gender::Male => choose_and_stringify(names::DRAGONBORN_MALE),
-            Gender::Female | Gender::NonBinary => choose_and_stringify(names::DRAGONBORN_FEMALE),
+            Gender::Female | Gender::None => choose_and_stringify(names::DRAGONBORN_FEMALE),
         },
         Race::Dwarf(_) => match gender {
             Gender::Male => choose_and_stringify(names::DWARF_MALE),
-            Gender::Female | Gender::NonBinary => choose_and_stringify(names::DWARF_FEMALE),
+            Gender::Female | Gender::None => choose_and_stringify(names::DWARF_FEMALE),
         },
         Race::Elf(_) => match gender {
             Gender::Male => choose_and_stringify(names::ELF_MALE),
-            Gender::Female | Gender::NonBinary => choose_and_stringify(names::ELF_FEMALE),
+            Gender::Female | Gender::None => choose_and_stringify(names::ELF_FEMALE),
         },
         Race::Halfling(_) | Race::Gnome(_) => match gender {
             Gender::Male => choose_and_stringify(names::HALFLING_MALE),
-            Gender::Female | Gender::NonBinary => choose_and_stringify(names::HALFLING_FEMALE),
+            Gender::Female | Gender::None => choose_and_stringify(names::HALFLING_FEMALE),
         },
         Race::HalfOrc => match gender {
             Gender::Male => choose_and_stringify(names::HALFORC_MALE),
-            Gender::Female | Gender::NonBinary => choose_and_stringify(names::HALFORC_FEMALE),
+            Gender::Female | Gender::None => choose_and_stringify(names::HALFORC_FEMALE),
         },
         Race::Human(_) | Race::HalfElf => match gender {
             Gender::Male => choose_and_stringify(names::HUMAN_MALE),
-            Gender::Female | Gender::NonBinary => choose_and_stringify(names::HUMAN_FEMALE),
+            Gender::Female | Gender::None => choose_and_stringify(names::HUMAN_FEMALE),
         },
         Race::Tiefling => match gender {
             Gender::Male => choose_and_stringify(names::TIEFLING_MALE),
-            Gender::Female | Gender::NonBinary => choose_and_stringify(names::TIEFLING_FEMALE),
+            Gender::Female | Gender::None => choose_and_stringify(names::TIEFLING_FEMALE),
         },
     }
 }
