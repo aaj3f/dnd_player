@@ -4,23 +4,13 @@ use strum_macros::{Display, EnumIter, EnumString};
 use super::utils::{choose_value, Choosable};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
-#[strum(ascii_case_insensitive)]
+#[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum Background {
     Acolyte,
     Charlatan,
     Criminal,
     Entertainer,
-    #[strum(
-        serialize = "folk hero",
-        serialize = "folkhero",
-        serialize = "folk-hero"
-    )]
     FolkHero,
-    #[strum(
-        serialize = "guild artisan",
-        serialize = "guildartisan",
-        serialize = "guild-artisan"
-    )]
     GuildArtisan,
     Hermit,
     Noble,

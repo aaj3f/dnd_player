@@ -20,12 +20,6 @@ use std::{
 };
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-struct Point {
-    x: f64,
-    y: f64,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct PlayObject {
     character: Character,
     #[serde(deserialize_with = "de_created_at", default = "empty_datetime")]
@@ -223,7 +217,7 @@ fn choose_stats() -> [Stat; 6] {
     for stat in &mut result {
         loop {
             pretty_print(
-                &format!("Enter a value for {}:", stat.show_name()),
+                &format!("Enter a value for {}: ", stat.show_name()),
                 BLUE,
                 false,
             );
@@ -245,11 +239,7 @@ fn choose_stats() -> [Stat; 6] {
 
 fn create_new_character() -> PlayObject {
     let one_second = time::Duration::from_secs(1);
-    pretty_print(
-        "It doesn't appear you've created a character yet. Let's get started.",
-        BLUE,
-        true,
-    );
+    pretty_print("Let's get started.", BLUE, true);
     thread::sleep(one_second);
 
     let race = Race::choose();
@@ -337,6 +327,21 @@ fn create_new_character() -> PlayObject {
     }
 }
 
+fn load_character_or_new(play_object: PlayObject) -> PlayObject {
+    let string_choice = format!(
+            "Would you like to continue with your previous character, {}?\n(Selecting no [N] will have you create a new character) [Y/N]: ",
+            play_object.character.name
+        );
+
+    play_object.character.display(true);
+
+    if choose_yes_or_no(&string_choice) {
+        play_object
+    } else {
+        create_new_character()
+    }
+}
+
 fn main() -> Result<(), serde_yaml::Error> {
     // let stats = [
     //     Stat::Str(10),
@@ -376,16 +381,21 @@ fn main() -> Result<(), serde_yaml::Error> {
     // let play_object: PlayObject =
     //     serde_yaml::from_str(&data).expect("Character YAML not properly configured");
     let play_object: PlayObject = match serde_yaml::from_str(&data) {
-        Ok(play_object) => play_object,
-        Err(err) => {
-            println!("playobject error: {:?}", err);
+        Ok(play_object) => load_character_or_new(play_object),
+        Err(_err) => {
+            // println!("playobject error: {:?}", err);
+            pretty_print(
+                "It doesn't appear you've created a character yet",
+                BLUE,
+                true,
+            );
             create_new_character()
         }
     };
 
-    // let s = serde_yaml::to_string(&play_object)?;
-    // println!("{:?}", s);
-    // fs::write("./output.yaml", &s).expect("Unable to write file");
+    let s = serde_yaml::to_string(&play_object)?;
+    println!("{:?}", s);
+    fs::write("./output.yaml", &s).expect("Unable to write file");
 
     play_object.character.display(true);
     Ok(())

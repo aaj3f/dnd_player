@@ -8,7 +8,7 @@ use std::{
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumIter, EnumString};
 
-use super::utils::{choose_value, pretty_print, Choosable, BLUE, PURPLE, RED};
+use super::utils::{choose_value, choose_yes_or_no, pretty_print, Choosable, BLUE, PURPLE, RED};
 
 use super::utils::StringJoin;
 
@@ -66,34 +66,7 @@ impl Class {
         let one_second = time::Duration::from_secs(1);
         let mut rng = rand::thread_rng();
 
-        let should_continue = loop {
-            pretty_print(
-            "\nYour character level is high enough to choose a sub-class.\nWould you like to go ahead and choose a sub-class for your character? [Y/N]: ",
-            BLUE,
-            false,
-        );
-
-            let mut answer = String::new();
-            match io::stdin().read_line(&mut answer) {
-                Ok(length) => {
-                    if length > 1 {
-                        match answer.trim().to_lowercase().as_str() {
-                            "yes" | "y" => break true,
-                            "no" | "n" => break false,
-                            _ => {
-                                continue;
-                            }
-                        }
-                    } else {
-                        break true;
-                    }
-                }
-                _ => {
-                    pretty_print("ERROR, please try again", RED, true);
-                    continue;
-                }
-            }
-        };
+        let should_continue = choose_yes_or_no("\nYour character level is high enough to choose a sub-class.\nWould you like to go ahead and choose a sub-class for your character? [Y/N]: ");
 
         if !should_continue {
             return self;

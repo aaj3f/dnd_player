@@ -45,6 +45,33 @@ pub fn pretty_print(string: &str, color: Color, newline: bool) {
     .expect("ERROR: stdout unavailable");
 }
 
+pub fn choose_yes_or_no(string_choice: &str) -> bool {
+    loop {
+        pretty_print(string_choice, BLUE, false);
+
+        let mut answer = String::new();
+        match io::stdin().read_line(&mut answer) {
+            Ok(length) => {
+                if length > 1 {
+                    match answer.trim().to_lowercase().as_str() {
+                        "yes" | "y" => break true,
+                        "no" | "n" => break false,
+                        _ => {
+                            continue;
+                        }
+                    }
+                } else {
+                    break true;
+                }
+            }
+            _ => {
+                pretty_print("ERROR, please try again", RED, true);
+                continue;
+            }
+        }
+    }
+}
+
 pub trait StringJoin<T> {
     fn join_string() -> String;
 }

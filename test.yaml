@@ -1,25 +1,26 @@
 ---
 character:
   name: Osswald
-  level: 4
-  background: Urchin
-  race: Human
-  gender: Male
+  level: 8
+  background: Criminal
+  race:
+    Human: Variant
   class:
-    Monk: {}
+    Monk: Mercy
   stats:
     - Str: 10
-    - Dex: 18
-    - Con: 14
+    - Dex: 16
+    - Con: 12
     - Int: 8
     - Wis: 16
-    - Chr: 8
+    - Chr: 10
   status:
-    armor_class: 12
+    armor_class: 16
     conditions: None
     blessed: false
-    initiative: 4
+    initiative: 3
     hit_dice: D8
-    current_hp: 10
-    maximum_hp: 10
+    current_hp: 51
+    maximum_hp: 51
     speed: 30
+  gender: Male

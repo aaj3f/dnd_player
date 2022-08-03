@@ -1,27 +1,28 @@
 ---
 character:
-  name: Osswald
+  name: Blue
   level: 4
-  background: Urchin
-  race: Human
+  background: Criminal
+  race: HalfElf
   class:
-    Monk: {}
+    Barbarian: WildMagic
   stats:
-    - Str: 10
-    - Dex: 18
+    - Str: 16
+    - Dex: 14
     - Con: 14
     - Int: 8
-    - Wis: 16
+    - Wis: 10
     - Chr: 8
   status:
-    armor_class: 12
+    armor_class: 14
     conditions: None
     blessed: false
-    initiative: 4
-    hit_dice: d8
-    current_hp: 10
-    maximum_hp: 10
+    initiative: 2
+    hit_dice: D12
+    current_hp: 41
+    maximum_hp: 41
     speed: 30
-created_at: "2022-02-16T20:39:43.002497Z"
-updated_at: "2022-02-16T20:39:43.002506Z"
-last_played_at: "2022-02-16T20:39:43.002507Z"
+  gender: Male
+created_at: "2022-08-03T20:07:28.445800Z"
+updated_at: "2022-08-03T20:07:28.445804Z"
+last_played_at: "2022-08-03T20:07:28.445804Z"

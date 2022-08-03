@@ -183,9 +183,23 @@ impl Character {
                 TableCell::new_with_alignment("Gender", 1, Alignment::Center),
                 TableCell::new_with_alignment(format!("{}", self.gender), 11, Alignment::Left),
             ]));
+
+            let subrace = match &self.race {
+                Race::Dwarf(v) => format!("({})", v.to_string()),
+                Race::Elf(v) => format!("({})", v.to_string()),
+                Race::Gnome(v) => format!("({})", v.to_string()),
+                Race::Halfling(v) => format!("({})", v.to_string()),
+                Race::Human(v) => format!("({})", v.to_string()),
+                _ => String::from(""),
+            };
+
             table.add_row(Row::new(vec![
                 TableCell::new_with_alignment("Race", 1, Alignment::Center),
-                TableCell::new_with_alignment(format!("{}", self.race), 11, Alignment::Left),
+                TableCell::new_with_alignment(
+                    format!("{} {}", self.race, subrace),
+                    11,
+                    Alignment::Left,
+                ),
             ]));
 
             let subclass = match &self.class {
