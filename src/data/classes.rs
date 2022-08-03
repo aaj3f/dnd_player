@@ -8,7 +8,7 @@ use std::{
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumIter, EnumString};
 
-use crate::{choose_value, pretty_print, Choosable, BLUE, PURPLE, RED};
+use super::utils::{choose_value, pretty_print, Choosable, BLUE, PURPLE, RED};
 
 use super::utils::StringJoin;
 
