@@ -1,18 +1,21 @@
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
+use strum_macros::{Display, EnumIter, EnumString};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+use super::utils::StringJoin;
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
 pub enum Stat {
-    Str(i8),
-    Dex(i8),
-    Con(i8),
-    Int(i8),
-    Wis(i8),
-    Chr(i8),
+    Str(u8),
+    Dex(u8),
+    Con(u8),
+    Int(u8),
+    Wis(u8),
+    Chr(u8),
 }
 
 impl Stat {
-    pub fn display(&self) -> String {
+    pub fn get_modifier(&self) -> i8 {
         let stat_val = match *self {
             Stat::Str(val) => val,
             Stat::Dex(val) => val,
@@ -21,7 +24,7 @@ impl Stat {
             Stat::Wis(val) => val,
             Stat::Chr(val) => val,
         };
-        let stat_modifier: i8 = match stat_val {
+        match stat_val {
             1 => -5,
             2 | 3 => -4,
             4 | 5 => -3,
@@ -39,11 +42,29 @@ impl Stat {
             28 | 29 => 9,
             30 => 10,
             _ => 0,
-        };
+        }
+    }
+    pub fn display(&self) -> String {
+        let stat_modifier = self.get_modifier();
         let sign = match stat_modifier.cmp(&0) {
             Ordering::Greater => "+",
             _ => "",
         };
         format!("{}{}", sign, stat_modifier)
+    }
+
+    pub fn show_name(&self) -> &str {
+        match &self {
+            Stat::Str(_) => "Strength",
+            Stat::Dex(_) => "Dexterity",
+            Stat::Con(_) => "Constitution",
+            Stat::Int(_) => "Intelligence",
+            Stat::Wis(_) => "Wisdom",
+            Stat::Chr(_) => "Charisma",
+        }
+    }
+
+    pub fn list() -> String {
+        Stat::join_string()
     }
 }

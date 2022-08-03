@@ -1,7 +1,5 @@
 use rand::prelude::IteratorRandom;
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
-use std::string::ToString;
 use std::{
     io::{self},
     str::FromStr,
@@ -11,6 +9,8 @@ use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumIter, EnumString};
 
 use crate::{choose_value, pretty_print, Choosable, BLUE, PURPLE, RED};
+
+use super::utils::StringJoin;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display)]
 #[strum(ascii_case_insensitive)]
@@ -48,37 +48,9 @@ pub enum Subclass {
     WizardSubclass,
 }
 
-pub trait StringJoin<T> {
-    fn join_string() -> String;
-}
-
 pub trait HasSubclass<T> {
     fn get_subclass(&self) -> String;
 }
-
-impl<T> StringJoin<T> for T
-where
-    T: Display + IntoEnumIterator,
-{
-    fn join_string() -> String {
-        T::iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<String>>()
-            .join(", ")
-    }
-}
-
-// impl<T> HasSubclass<T> for T
-// where
-//     T: Display + IntoEnumIterator,
-// {
-//     fn get_subclass(&self) -> String {
-//         match self {
-//             Some(v) => v.to_string(),
-//             None => ""
-//         }
-//     }
-// }
 
 impl Choosable<Class> for Class {
     fn choose() -> Class {

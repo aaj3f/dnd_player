@@ -1,3 +1,4 @@
+use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use term_table::{
     row::Row,
@@ -17,6 +18,7 @@ enum Condition {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 enum Dice {
     D4,
+    D6,
     D8,
     D10,
     D12,
@@ -26,28 +28,123 @@ enum Dice {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Status {
-    armor_class: u8,
+    armor_class: i8,
     conditions: Condition,
     blessed: bool,
-    initiative: u8,
+    initiative: i8,
     hit_dice: Dice,
-    current_hp: u8,
-    maximum_hp: u8,
+    current_hp: i8,
+    maximum_hp: i8,
     speed: u16,
 }
 
+fn calculate_ac(stats: &[Stat], class: &Class) -> i8 {
+    let additional_ac = match class {
+        Class::Barbarian(_) => stats[2].get_modifier(),
+        Class::Monk(_) => stats[4].get_modifier(),
+        _ => 0,
+    };
+    10 + stats[1].get_modifier() + additional_ac
+}
+
+fn calculate_speed(race: &Race) -> u16 {
+    match race {
+        Race::Dwarf(_) | Race::Gnome(_) | Race::Halfling(_) => 25,
+        Race::Dragonborn | Race::HalfElf | Race::HalfOrc | Race::Human(_) | Race::Tiefling => 30,
+        Race::Elf(v) => match v {
+            super::races::Elf::WoodElf => 35,
+            _ => 30,
+        },
+    }
+}
+
 impl Status {
-    pub fn new(_stats: &[Stat]) -> Status {
-        Status {
-            armor_class: 12,
+    pub fn new(
+        stats: &[Stat],
+        race: &Race,
+        class: &Class,
+        level: &u8,
+        use_average_dice: bool,
+    ) -> Status {
+        let hit_dice = match class {
+            Class::Artificer(_) => Dice::D8,
+            Class::Barbarian(_) => Dice::D12,
+            Class::Bard(_) => Dice::D8,
+            Class::Cleric(_) => Dice::D8,
+            Class::Druid(_) => Dice::D8,
+            Class::Fighter(_) => Dice::D10,
+            Class::Monk(_) => Dice::D8,
+            Class::Paladin(_) => Dice::D10,
+            Class::Ranger(_) => Dice::D10,
+            Class::Rogue(_) => Dice::D8,
+            Class::Sorcerer(_) => Dice::D6,
+            Class::Warlock(_) => Dice::D8,
+            Class::Wizard(_) => Dice::D6,
+        };
+        let status = Status {
+            armor_class: calculate_ac(stats, class),
             conditions: Condition::None,
             blessed: false,
-            initiative: 4,
-            hit_dice: Dice::D8,
+            initiative: stats[1].get_modifier(),
+            hit_dice,
             current_hp: 10,
             maximum_hp: 10,
-            speed: 30,
-        }
+            speed: calculate_speed(race),
+        };
+        status.calculate_hp(level, stats[2].get_modifier(), use_average_dice)
+    }
+
+    pub fn calculate_hp(mut self, level: &u8, con_modifier: i8, use_average_dice: bool) -> Self {
+        let hit_dice = &self.hit_dice;
+
+        let hp_first_level: i8 = con_modifier
+            + match hit_dice {
+                Dice::D6 => 6,
+                Dice::D8 => 8,
+                Dice::D10 => 10,
+                Dice::D12 => 12,
+                _ => panic!("Somehow you don't have a d6, d8, d10, or d12 as your Hit Dice"),
+            };
+
+        let maximum_hp: i8 = if use_average_dice {
+            let hp_per_level = match hit_dice {
+                Dice::D6 => 4,
+                Dice::D8 => 5,
+                Dice::D10 => 6,
+                Dice::D12 => 7,
+                _ => panic!("Somehow you don't have a d6, d8, d10, or d12 as your Hit Dice"),
+            };
+            println!(
+                "HP FIRST LEVEL: {}\nCON MODIFIER VALUE: {}\nHP PER LEVEL: {}\nLEVEL: {}\n",
+                hp_first_level, con_modifier, hp_per_level, level
+            );
+            hp_first_level + ((con_modifier + hp_per_level) * (*level - 1) as i8)
+        } else {
+            let mut hp_to_add = 0;
+            let mut rng = thread_rng();
+            for _ in 1..*level {
+                let inc = match hit_dice {
+                    Dice::D6 => rng.gen_range(1..=6),
+                    Dice::D8 => rng.gen_range(1..=8),
+                    Dice::D10 => rng.gen_range(1..=10),
+                    Dice::D12 => rng.gen_range(1..=12),
+                    _ => panic!("Somehow you don't have a d6, d8, d10, or d12 as your Hit Dice"),
+                };
+                println!(
+                    "HP TO ADD: {}\nINC: {}\nCON MOD VALUE: {}\nHP TO ADD (AFTER): {}\n",
+                    hp_to_add,
+                    inc,
+                    con_modifier,
+                    inc + con_modifier
+                );
+                hp_to_add += inc + con_modifier
+            }
+            hp_first_level + hp_to_add
+        };
+
+        self.maximum_hp = maximum_hp;
+        self.current_hp = maximum_hp;
+        self
     }
 }
 
@@ -192,6 +289,7 @@ impl Character {
 
         println!("{}", table.render());
     }
+
     pub fn get_str(&self) -> &Stat {
         &self.stats[0]
     }

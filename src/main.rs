@@ -256,20 +256,77 @@ fn choose_level() -> u8 {
     }
 }
 
-fn choose_subrace<T>(x: Vec<T>) -> Race
-where
-    T: std::fmt::Debug + Display,
-    // [T]: Join<>,
-{
-    println!("{:?}", x);
-    pretty_print(
-        "Your chosen race allows for the choice of a subrace.",
-        BLUE,
-        true,
-    );
-    pretty_print("Please choose from the following: ", BLUE, false);
-    pretty_print(&format!("{:?}", x), PURPLE, true);
-    Race::Dwarf(Dwarf::HillDwarf)
+fn choose_average_dice() -> bool {
+    pretty_print("\nTo calculate your player's HP, would you like to\ntake the average of your hit dice [Y] or roll for each new level [N]?", BLUE, true);
+    loop {
+        pretty_print("[Y/N]: ", PURPLE, false);
+        // let name = String::from("Osswalkd");
+        let mut answer = String::new();
+        match io::stdin().read_line(&mut answer) {
+            Ok(length) => {
+                if length > 1 {
+                    match answer.trim().to_lowercase().as_str() {
+                        "yes" | "y" => break true,
+                        "no" | "n" => break false,
+                        _ => {
+                            continue;
+                        }
+                    }
+                } else {
+                    break true;
+                }
+            }
+            _ => {
+                pretty_print("ERROR, please try again", RED, true);
+                continue;
+            }
+        }
+    }
+}
+
+fn match_stat(stat: &Stat, new_value: u8) -> Stat {
+    match stat {
+        Stat::Str(_) => Stat::Str(new_value),
+        Stat::Dex(_) => Stat::Dex(new_value),
+        Stat::Con(_) => Stat::Con(new_value),
+        Stat::Int(_) => Stat::Int(new_value),
+        Stat::Wis(_) => Stat::Wis(new_value),
+        Stat::Chr(_) => Stat::Chr(new_value),
+    }
+}
+
+fn choose_stats() -> [Stat; 6] {
+    pretty_print("You will need to choose the following stats...", BLUE, true);
+    pretty_print(&Stat::list(), PURPLE, true);
+    let mut result = [
+        Stat::Str(0),
+        Stat::Dex(0),
+        Stat::Con(0),
+        Stat::Int(0),
+        Stat::Wis(0),
+        Stat::Chr(0),
+    ];
+    for stat in &mut result {
+        loop {
+            pretty_print(
+                &format!("Enter a value for {}:", stat.show_name()),
+                BLUE,
+                false,
+            );
+            let mut stat_value = String::from("");
+            match io::stdin().read_line(&mut stat_value) {
+                Ok(_) => match stat_value.trim().parse::<u8>().unwrap_or(21) {
+                    x if (1..=20).contains(&x) => {
+                        *stat = match_stat(&stat, x);
+                        break;
+                    }
+                    _ => continue,
+                },
+                Err(_) => continue,
+            }
+        }
+    }
+    result
 }
 
 fn create_new_character() -> PlayObject {
@@ -285,13 +342,21 @@ fn create_new_character() -> PlayObject {
     println!("RACE: {:?}", &race);
 
     let race: Race = match race {
-        Race::Dwarf(_) => choose_subrace(Dwarf::iter().collect()),
-        Race::Elf(_) => choose_subrace(Elf::iter().collect()),
-        Race::Halfling(_) => choose_subrace(Halfling::iter().collect()),
-        Race::Human(_) => choose_subrace(Human::iter().collect()),
-        Race::Gnome(_) => choose_subrace(Gnome::iter().collect()),
+        Race::Dwarf(_) => race.choose_subrace(),
+        Race::Elf(_) => race.choose_subrace(),
+        Race::Halfling(_) => race.choose_subrace(),
+        Race::Human(_) => race.choose_subrace(),
+        Race::Gnome(_) => race.choose_subrace(),
         _ => race,
     };
+    // let race: Race = match race {
+    //     Race::Dwarf(_) => choose_subrace(Dwarf::iter().collect()),
+    //     Race::Elf(_) => choose_subrace(Elf::iter().collect()),
+    //     Race::Halfling(_) => choose_subrace(Halfling::iter().collect()),
+    //     Race::Human(_) => choose_subrace(Human::iter().collect()),
+    //     Race::Gnome(_) => choose_subrace(Gnome::iter().collect()),
+    //     _ => race,
+    // };
 
     let gender = Gender::choose();
     println!("GENDER: {:?}", &gender);
@@ -314,6 +379,9 @@ fn create_new_character() -> PlayObject {
         //TODO: add subclass to PlayObject
     }
 
+    let stats: [Stat; 6] = choose_stats();
+    println!("STATS: {:?}", &stats);
+
     // pretty_print("\nDo you want to enter your character's stats?", BLUE, true);
     // pretty_print("(press ENTER to default to 'NO'):", PURPLE, true);
     // thread::sleep(one_second);
@@ -325,28 +393,30 @@ fn create_new_character() -> PlayObject {
     - CALCULATOR
     */
 
-    let stats = [
-        Stat::Str(10),
-        Stat::Dex(18),
-        Stat::Con(14),
-        Stat::Int(8),
-        Stat::Wis(16),
-        Stat::Chr(8),
-    ];
+    // let stats = [
+    //     Stat::Str(10),
+    //     Stat::Dex(18),
+    //     Stat::Con(14),
+    //     Stat::Int(8),
+    //     Stat::Wis(16),
+    //     Stat::Chr(8),
+    // ];
+    let use_average_dice = choose_average_dice();
+    let status = Status::new(&stats, &race, &class, &level, use_average_dice);
 
-    let status = Status::new(&stats);
+    let character = Character {
+        name,
+        level,
+        background,
+        race,
+        class,
+        stats,
+        status,
+        gender,
+    };
 
     PlayObject {
-        character: Character {
-            name,
-            level,
-            background,
-            race,
-            class,
-            stats,
-            status,
-            gender,
-        },
+        character,
         created_at: Utc::now(),
         updated_at: Some(Utc::now()),
         last_played_at: Utc::now(),

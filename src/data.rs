@@ -5,3 +5,4 @@ pub mod gender;
 pub mod names;
 pub mod races;
 pub mod stats;
+pub mod utils;
