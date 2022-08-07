@@ -1,5 +1,5 @@
 [package]
-name = "serde_yaml_test"
+name = "dnd_player"
 version = "0.1.0"
 edition = "2021"
 

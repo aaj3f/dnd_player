@@ -70,6 +70,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "dnd_player"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "crossterm",
+ "rand",
+ "serde",
+ "serde_yaml",
+ "strum",
+ "strum_macros",
+ "term-table",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -362,20 +376,6 @@ dependencies = [
  "ryu",
  "serde",
  "yaml-rust",
-]
-
-[[package]]
-name = "serde_yaml_test"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "crossterm",
- "rand",
- "serde",
- "serde_yaml",
- "strum",
- "strum_macros",
- "term-table",
 ]
 
 [[package]]
