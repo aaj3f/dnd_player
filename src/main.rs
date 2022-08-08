@@ -118,9 +118,9 @@ fn choose_name(race: &Race, gender: &Gender) -> String {
     let name_result: Result<String, io::Error> = Input::with_theme(&ColorfulTheme::default())
         .allow_empty(true)
         .show_default(false)
-        .with_prompt("\nWhat is your character's name? (press ENTER to randomize)")
+        .with_prompt("What is your character's name? (press ENTER to randomize)")
         .interact_text();
-    match name_result {
+    let result = match name_result {
         Ok(name) => {
             let name = name.trim();
             if name.chars().count() > 0 {
@@ -130,42 +130,69 @@ fn choose_name(race: &Race, gender: &Gender) -> String {
             }
         }
         Err(_) => random_name_from_race_gender(&race, &gender),
+    };
+
+    pretty_print(&format!("\nYour choice: {}\n", result), BLUE, true);
+    result
+}
+
+fn is_valid_level(input: &String) -> bool {
+    match input.parse::<u8>() {
+        Ok(v) => match v {
+            1..=20 => true,
+            _ => false,
+        },
+        Err(_) => false,
     }
 }
 
 fn choose_level() -> u8 {
-    loop {
-        pretty_print("\nWhat is your character's level?", BLUE, true);
-        pretty_print("(press ENTER if Level '1'):", PURPLE, false);
-        // let name = String::from("Osswalkd");
-        let mut level = String::new();
-        match io::stdin().read_line(&mut level) {
-            Ok(length) => {
-                if length > 1 {
-                    match level.trim().parse::<u8>() {
-                        Ok(num) => match num {
-                            1..=20 => break num,
-                            _ => {
-                                pretty_print("Level Must Be Between 1 and 20", RED, true);
-                                continue;
-                            }
-                        },
-                        Err(x) => {
-                            println!("IT IS *NOT* A NUM: {:?}", x);
-                            pretty_print("Please Enter a Number Between 1 and 20", RED, true);
-                            continue;
-                        }
-                    }
-                } else {
-                    break 1;
-                }
+    let level: String = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("What is your character's level?")
+        .default(String::from("1"))
+        .validate_with(|input: &String| -> Result<(), &str> {
+            if is_valid_level(&input) {
+                Ok(())
+            } else {
+                Err("That is not a valid level")
             }
-            _ => {
-                pretty_print("ERROR, please try again", RED, true);
-                continue;
-            }
-        }
-    }
+        })
+        .interact_text()
+        .unwrap();
+    pretty_print(&format!("\nYour choice: {:?}\n", level), BLUE, true);
+    level.parse::<u8>().unwrap()
+    // loop {
+    //     pretty_print("\nWhat is your character's level?", BLUE, true);
+    //     pretty_print("(press ENTER if Level '1'):", PURPLE, false);
+    //     // let name = String::from("Osswalkd");
+    //     let mut level = String::new();
+    //     match io::stdin().read_line(&mut level) {
+    //         Ok(length) => {
+    //             if length > 1 {
+    //                 match level.trim().parse::<u8>() {
+    //                     Ok(num) => match num {
+    //                         1..=20 => break num,
+    //                         _ => {
+    //                             pretty_print("Level Must Be Between 1 and 20", RED, true);
+    //                             continue;
+    //                         }
+    //                     },
+    //                     Err(x) => {
+    //                         println!("IT IS *NOT* A NUM: {:?}", x);
+    //                         pretty_print("Please Enter a Number Between 1 and 20", RED, true);
+    //                         continue;
+    //                     }
+    //                 }
+    //             } else {
+    //                 break 1;
+    //             }
+    //         }
+    //         _ => {
+    //             pretty_print("ERROR, please try again", RED, true);
+    //             continue;
+    //         }
+    //     }
+    // }
 }
 
 fn choose_average_dice() -> bool {
@@ -282,7 +309,6 @@ fn create_new_character() -> PlayObject {
 
     if level > 2 {
         class = class.choose_subclass();
-        thread::sleep(one_second);
         //TODO: add subclass to PlayObject
     }
 

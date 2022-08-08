@@ -14,7 +14,7 @@ pub enum Gender {
 impl Choosable<Gender> for Gender {
     fn choose() -> Gender {
         choose_value(
-            "\nWhat is your character's gender?",
+            "What is your character's gender?",
             &Gender::collect_string(), // gender_match_string,
         )
     }

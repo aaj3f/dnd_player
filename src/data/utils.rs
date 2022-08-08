@@ -2,14 +2,13 @@ use crossterm::{
     execute,
     style::{Color, Print, ResetColor, SetForegroundColor},
 };
-use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect, Select};
+use dialoguer::{theme::ColorfulTheme, Confirm, Select};
 use rand::prelude::*;
 use std::fmt::Display;
 use std::string::ToString;
 use std::{
     io::{self},
     str::FromStr,
-    thread, time,
 };
 use strum::IntoEnumIterator;
 

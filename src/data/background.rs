@@ -23,7 +23,7 @@ pub enum Background {
 impl Choosable<Background> for Background {
     fn choose() -> Background {
         choose_value(
-            "\nWhat is your character's background?",
+            "What is your character's background?",
             &Background::collect_string(), // background_match_string
         )
     }

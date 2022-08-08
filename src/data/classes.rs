@@ -1,14 +1,7 @@
-use rand::prelude::IteratorRandom;
 use serde::{Deserialize, Serialize};
-use std::{
-    io::{self},
-    str::FromStr,
-    thread, time,
-};
-use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumIter, EnumString};
 
-use super::utils::{choose_value, choose_yes_or_no, pretty_print, Choosable, BLUE, PURPLE, RED};
+use super::utils::{choose_value, Choosable};
 
 use super::utils::StringJoin;
 
@@ -55,7 +48,7 @@ pub trait HasSubclass<T> {
 impl Choosable<Class> for Class {
     fn choose() -> Class {
         choose_value(
-            "\nWhat is your character's class?",
+            "What is your character's class?",
             &Class::collect_string(),
             // class_match_string
         )
@@ -64,196 +57,20 @@ impl Choosable<Class> for Class {
 
 impl Class {
     pub fn choose_subclass(self) -> Self {
-        let one_second = time::Duration::from_secs(1);
-        let mut rng = rand::thread_rng();
-
-        let should_continue = choose_yes_or_no("\nYour character level is high enough to choose a sub-class.\nWould you like to go ahead and choose a sub-class for your character? [Y/N]: ");
-
-        if !should_continue {
-            return self;
-        }
-
-        loop {
-            let options: String = match self {
-                Self::Artificer(_) => ArtificerSubclass::join_string(),
-                Self::Barbarian(_) => BarbarianSubclass::join_string(),
-                Self::Bard(_) => BardSubclass::join_string(),
-                Self::Cleric(_) => ClericSubclass::join_string(),
-                Self::Druid(_) => DruidSubclass::join_string(),
-                Self::Fighter(_) => FighterSubclass::join_string(),
-                Self::Monk(_) => MonkSubclass::join_string(),
-                Self::Paladin(_) => PaladinSubclass::join_string(),
-                Self::Ranger(_) => RangerSubclass::join_string(),
-                Self::Rogue(_) => RogueSubclass::join_string(),
-                Self::Sorcerer(_) => SorcererSubclass::join_string(),
-                Self::Warlock(_) => WarlockSubclass::join_string(),
-                Self::Wizard(_) => WizardSubclass::join_string(),
-            };
-
-            pretty_print("Please choose from the following: ", BLUE, false);
-            pretty_print(&format!("{}", options), PURPLE, true);
-            pretty_print("(press ENTER to randomize):", PURPLE, false);
-            thread::sleep(one_second);
-            let mut input_str = String::new();
-            match io::stdin().read_line(&mut input_str) {
-                Ok(length) => {
-                    if length > 1 {
-                        // let match_value = matcher(&input_str);
-                        let match_result = match self {
-                            Self::Artificer(_) => {
-                                match ArtificerSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Artificer(v),
-                                    Err(_) => {
-                                        println!("Not an available option");
-                                        continue;
-                                    }
-                                }
-                            }
-                            Self::Barbarian(_) => {
-                                match BarbarianSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Barbarian(v),
-                                    Err(_) => {
-                                        println!("Not an available option");
-                                        continue;
-                                    }
-                                }
-                            }
-                            Self::Bard(_) => match BardSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Bard(v),
-                                Err(_) => {
-                                    println!("Not an available option");
-                                    continue;
-                                }
-                            },
-                            Self::Cleric(_) => match ClericSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Cleric(v),
-                                Err(_) => {
-                                    println!("Not an available option");
-                                    continue;
-                                }
-                            },
-                            Self::Druid(_) => match DruidSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Druid(v),
-                                Err(_) => {
-                                    println!("Not an available option");
-                                    continue;
-                                }
-                            },
-                            Self::Fighter(_) => {
-                                match FighterSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Fighter(v),
-                                    Err(_) => {
-                                        println!("Not an available option");
-                                        continue;
-                                    }
-                                }
-                            }
-                            Self::Monk(_) => match MonkSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Monk(v),
-                                Err(_) => {
-                                    println!("Not an available option");
-                                    continue;
-                                }
-                            },
-                            Self::Paladin(_) => {
-                                match PaladinSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Paladin(v),
-                                    Err(_) => {
-                                        println!("Not an available option");
-                                        continue;
-                                    }
-                                }
-                            }
-                            Self::Ranger(_) => match RangerSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Ranger(v),
-                                Err(_) => {
-                                    println!("Not an available option");
-                                    continue;
-                                }
-                            },
-                            Self::Rogue(_) => match RogueSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Rogue(v),
-                                Err(_) => {
-                                    println!("Not an available option");
-                                    continue;
-                                }
-                            },
-                            Self::Sorcerer(_) => {
-                                match SorcererSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Sorcerer(v),
-                                    Err(_) => {
-                                        println!("Not an available option");
-                                        continue;
-                                    }
-                                }
-                            }
-                            Self::Warlock(_) => {
-                                match WarlockSubclass::from_str(&input_str.trim()) {
-                                    Ok(v) => Self::Warlock(v),
-                                    Err(_) => {
-                                        println!("Not an available option");
-                                        continue;
-                                    }
-                                }
-                            }
-                            Self::Wizard(_) => match WizardSubclass::from_str(&input_str.trim()) {
-                                Ok(v) => Self::Wizard(v),
-                                Err(_) => {
-                                    println!("Not an available option");
-                                    continue;
-                                }
-                            },
-                        };
-                        break match_result;
-                    } else {
-                        break match self {
-                            Self::Artificer(_) => {
-                                Self::Artificer(ArtificerSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Barbarian(_) => {
-                                Self::Barbarian(BarbarianSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Bard(_) => {
-                                Self::Bard(BardSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Cleric(_) => {
-                                Self::Cleric(ClericSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Druid(_) => {
-                                Self::Druid(DruidSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Fighter(_) => {
-                                Self::Fighter(FighterSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Monk(_) => {
-                                Self::Monk(MonkSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Paladin(_) => {
-                                Self::Paladin(PaladinSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Ranger(_) => {
-                                Self::Ranger(RangerSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Rogue(_) => {
-                                Self::Rogue(RogueSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Sorcerer(_) => {
-                                Self::Sorcerer(SorcererSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Warlock(_) => {
-                                Self::Warlock(WarlockSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                            Self::Wizard(_) => {
-                                Self::Wizard(WizardSubclass::iter().choose(&mut rng).unwrap())
-                            }
-                        };
-                    }
-                }
-                _ => {
-                    pretty_print("UNACCEPTABLE", RED, true);
-                    continue;
-                }
-            }
+        match self {
+            Self::Artificer(_) => Self::Artificer(ArtificerSubclass::choose()),
+            Self::Barbarian(_) => Self::Barbarian(BarbarianSubclass::choose()),
+            Self::Bard(_) => Self::Bard(BardSubclass::choose()),
+            Self::Cleric(_) => Self::Cleric(ClericSubclass::choose()),
+            Self::Druid(_) => Self::Druid(DruidSubclass::choose()),
+            Self::Fighter(_) => Self::Fighter(FighterSubclass::choose()),
+            Self::Monk(_) => Self::Monk(MonkSubclass::choose()),
+            Self::Paladin(_) => Self::Paladin(PaladinSubclass::choose()),
+            Self::Ranger(_) => Self::Ranger(RangerSubclass::choose()),
+            Self::Rogue(_) => Self::Rogue(RogueSubclass::choose()),
+            Self::Sorcerer(_) => Self::Sorcerer(SorcererSubclass::choose()),
+            Self::Warlock(_) => Self::Warlock(WarlockSubclass::choose()),
+            Self::Wizard(_) => Self::Wizard(WizardSubclass::choose()),
         }
     }
 }
@@ -267,6 +84,17 @@ pub enum ArtificerSubclass {
     BattleSmith,
     Armorer,
 }
+
+impl Choosable<ArtificerSubclass> for ArtificerSubclass {
+    fn choose() -> ArtificerSubclass {
+        choose_value(
+            "What is your Artificer's subclass?",
+            &ArtificerSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum BarbarianSubclass {
@@ -279,6 +107,17 @@ pub enum BarbarianSubclass {
     Beast,
     WildMagic,
 }
+
+impl Choosable<BarbarianSubclass> for BarbarianSubclass {
+    fn choose() -> BarbarianSubclass {
+        choose_value(
+            "What is your Barbarian's subclass?",
+            &BarbarianSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum BardSubclass {
@@ -291,6 +130,17 @@ pub enum BardSubclass {
     Eloquence,
     Creation,
 }
+
+impl Choosable<BardSubclass> for BardSubclass {
+    fn choose() -> BardSubclass {
+        choose_value(
+            "What is your Bard's subclass?",
+            &BardSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum ClericSubclass {
@@ -308,6 +158,17 @@ pub enum ClericSubclass {
     Peace,
     Twilight,
 }
+
+impl Choosable<ClericSubclass> for ClericSubclass {
+    fn choose() -> ClericSubclass {
+        choose_value(
+            "What is your Cleric's subclass?",
+            &ClericSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum DruidSubclass {
@@ -320,6 +181,17 @@ pub enum DruidSubclass {
     Stars,
     Wildfire,
 }
+
+impl Choosable<DruidSubclass> for DruidSubclass {
+    fn choose() -> DruidSubclass {
+        choose_value(
+            "What is your Druid's subclass?",
+            &DruidSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum FighterSubclass {
@@ -332,6 +204,17 @@ pub enum FighterSubclass {
     PsiWarrior,
     RuneKnight,
 }
+
+impl Choosable<FighterSubclass> for FighterSubclass {
+    fn choose() -> FighterSubclass {
+        choose_value(
+            "What is your Fighter's subclass?",
+            &FighterSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum MonkSubclass {
@@ -345,6 +228,17 @@ pub enum MonkSubclass {
     Mercy,
     AstralSelf,
 }
+
+impl Choosable<MonkSubclass> for MonkSubclass {
+    fn choose() -> MonkSubclass {
+        choose_value(
+            "What is your Monk's subclass?",
+            &MonkSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum PaladinSubclass {
@@ -357,6 +251,17 @@ pub enum PaladinSubclass {
     Glory,
     Watchers,
 }
+
+impl Choosable<PaladinSubclass> for PaladinSubclass {
+    fn choose() -> PaladinSubclass {
+        choose_value(
+            "What is your Paladin's subclass?",
+            &PaladinSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum RangerSubclass {
@@ -369,6 +274,17 @@ pub enum RangerSubclass {
     FeyWanderer,
     Swarmkeeper,
 }
+
+impl Choosable<RangerSubclass> for RangerSubclass {
+    fn choose() -> RangerSubclass {
+        choose_value(
+            "What is your Ranger's subclass?",
+            &RangerSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum RogueSubclass {
@@ -383,6 +299,17 @@ pub enum RogueSubclass {
     Phantom,
     Soulknife,
 }
+
+impl Choosable<RogueSubclass> for RogueSubclass {
+    fn choose() -> RogueSubclass {
+        choose_value(
+            "What is your Rogue's subclass?",
+            &RogueSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum SorcererSubclass {
@@ -395,6 +322,17 @@ pub enum SorcererSubclass {
     AberrantMind,
     ClockworkSoul,
 }
+
+impl Choosable<SorcererSubclass> for SorcererSubclass {
+    fn choose() -> SorcererSubclass {
+        choose_value(
+            "What is your Sorcerer's subclass?",
+            &SorcererSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum WarlockSubclass {
@@ -407,6 +345,17 @@ pub enum WarlockSubclass {
     Fathomless,
     Genie,
 }
+
+impl Choosable<WarlockSubclass> for WarlockSubclass {
+    fn choose() -> WarlockSubclass {
+        choose_value(
+            "What is your Warlock's subclass?",
+            &WarlockSubclass::collect_string(),
+            // class_match_string
+        )
+    }
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, EnumIter, EnumString, Display, Default)]
 #[strum(ascii_case_insensitive, serialize_all = "title_case")]
 pub enum WizardSubclass {
@@ -421,4 +370,14 @@ pub enum WizardSubclass {
     Transmutation,
     Bladesinger,
     WarMagic,
+}
+
+impl Choosable<WizardSubclass> for WizardSubclass {
+    fn choose() -> WizardSubclass {
+        choose_value(
+            "What is your Wizard's subclass?",
+            &WizardSubclass::collect_string(),
+            // class_match_string
+        )
+    }
 }
