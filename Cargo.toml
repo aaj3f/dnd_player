@@ -14,3 +14,4 @@ crossterm = "0.22"
 rand = "0.8.5"
 strum = "0.24"
 strum_macros = "0.24"
+dialoguer = { version = "0.10.2", features=["fuzzy-select"] }

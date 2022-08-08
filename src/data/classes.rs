@@ -54,10 +54,11 @@ pub trait HasSubclass<T> {
 
 impl Choosable<Class> for Class {
     fn choose() -> Class {
-        choose_value("\nWhat is your character's class?", 
-        "Artificer, Barbarian, Bard, Cleric, Druid, Figher, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard", 
-        // class_match_string
-    )
+        choose_value(
+            "\nWhat is your character's class?",
+            &Class::collect_string(),
+            // class_match_string
+        )
     }
 }
 

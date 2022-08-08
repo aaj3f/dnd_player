@@ -9,6 +9,8 @@ use data::names;
 use data::races::*;
 use data::stats::*;
 use data::utils::*;
+use dialoguer::theme::ColorfulTheme;
+use dialoguer::Input;
 use rand::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_yaml;
@@ -113,19 +115,21 @@ fn random_name_from_race_gender(race: &Race, gender: &Gender) -> String {
 }
 
 fn choose_name(race: &Race, gender: &Gender) -> String {
-    pretty_print("\nWhat is your character's name?", BLUE, true);
-    pretty_print("(press ENTER to randomize):", PURPLE, false);
-    // let name = String::from("Osswalkd");
-    let mut name = String::new();
-    match io::stdin().read_line(&mut name) {
-        Ok(length) => {
-            if length > 1 {
-                name.trim().to_owned()
+    let name_result: Result<String, io::Error> = Input::with_theme(&ColorfulTheme::default())
+        .allow_empty(true)
+        .show_default(false)
+        .with_prompt("\nWhat is your character's name? (press ENTER to randomize)")
+        .interact_text();
+    match name_result {
+        Ok(name) => {
+            let name = name.trim();
+            if name.chars().count() > 0 {
+                name.to_owned()
             } else {
                 random_name_from_race_gender(&race, &gender)
             }
         }
-        Err(_) => String::from("bar"),
+        Err(_) => random_name_from_race_gender(&race, &gender),
     }
 }
 
@@ -239,11 +243,10 @@ fn choose_stats() -> [Stat; 6] {
 
 fn create_new_character() -> PlayObject {
     let one_second = time::Duration::from_secs(1);
-    pretty_print("Let's get started.", BLUE, true);
+    // pretty_print("Let's get started.", BLUE, true);
     thread::sleep(one_second);
 
     let race = Race::choose();
-    println!("RACE: {:?}", &race);
 
     let race: Race = match race {
         Race::Dwarf(_) => race.choose_subrace(),
@@ -263,19 +266,19 @@ fn create_new_character() -> PlayObject {
     // };
 
     let gender = Gender::choose();
-    println!("GENDER: {:?}", &gender);
+    // println!("GENDER: {:?}", &gender);
 
     let name = choose_name(&race, &gender);
-    println!("NAME: {}", &name);
+    // println!("NAME: {}", &name);
 
     let mut class = Class::choose();
-    println!("CLASS: {:?}", &class);
+    // println!("CLASS: {:?}", &class);
 
     let background = Background::choose();
-    println!("BACKGROUND: {:?}", &background);
+    // println!("BACKGROUND: {:?}", &background);
 
     let level: u8 = choose_level();
-    println!("LEVEL: {}", &level);
+    // println!("LEVEL: {}", &level);
 
     if level > 2 {
         class = class.choose_subclass();
@@ -284,7 +287,7 @@ fn create_new_character() -> PlayObject {
     }
 
     let stats: [Stat; 6] = choose_stats();
-    println!("STATS: {:?}", &stats);
+    // println!("STATS: {:?}", &stats);
 
     // pretty_print("\nDo you want to enter your character's stats?", BLUE, true);
     // pretty_print("(press ENTER to default to 'NO'):", PURPLE, true);
@@ -328,14 +331,9 @@ fn create_new_character() -> PlayObject {
 }
 
 fn load_character_or_new(play_object: PlayObject) -> PlayObject {
-    let string_choice = format!(
-            "Would you like to continue with your previous character, {}?\n(Selecting no [N] will have you create a new character) [Y/N]: ",
-            play_object.character.name
-        );
-
     play_object.character.display(true);
 
-    if choose_yes_or_no(&string_choice) {
+    if choose_yes_or_no(&play_object.character.name) {
         play_object
     } else {
         create_new_character()

@@ -155,10 +155,6 @@ pub enum Gnome {
 
 impl Choosable<Race> for Race {
     fn choose() -> Race {
-        choose_value(
-            "\nWhat is your character's race?",
-            &Race::join_string(),
-            // race_match_string,
-        )
+        choose_value("\nWhat is your character's race?", &Race::collect_string())
     }
 }
