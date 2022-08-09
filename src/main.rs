@@ -10,6 +10,7 @@ use data::races::*;
 use data::stats::*;
 use data::utils::*;
 use dialoguer::theme::ColorfulTheme;
+use dialoguer::Confirm;
 use dialoguer::Input;
 use rand::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize};
@@ -196,31 +197,19 @@ fn choose_level() -> u8 {
 }
 
 fn choose_average_dice() -> bool {
-    pretty_print("\nTo calculate your player's HP, would you like to\ntake the average of your hit dice [Y] or roll for each new level [N]?", BLUE, true);
-    loop {
-        pretty_print("[Y/N]: ", PURPLE, false);
-        // let name = String::from("Osswalkd");
-        let mut answer = String::new();
-        match io::stdin().read_line(&mut answer) {
-            Ok(length) => {
-                if length > 1 {
-                    match answer.trim().to_lowercase().as_str() {
-                        "yes" | "y" => break true,
-                        "no" | "n" => break false,
-                        _ => {
-                            continue;
-                        }
-                    }
-                } else {
-                    break true;
-                }
-            }
-            _ => {
-                pretty_print("ERROR, please try again", RED, true);
-                continue;
-            }
-        }
-    }
+    let choice = Confirm::with_theme(&ColorfulTheme::default())
+        .with_prompt("\nWould you like to calculate your player's HP with the average of your hit dice? ('NO' will roll for each new level)")
+        .default(true)
+        .show_default(false)
+        .wait_for_newline(true)
+        .interact()
+        .unwrap();
+    if choice {
+        println!("Great, we'll use your hit dice average!");
+    } else {
+        println!("Brave choice! Let's roll your HP for each level");
+    };
+    choice
 }
 
 fn match_stat(stat: &Stat, new_value: u8) -> Stat {
@@ -235,8 +224,12 @@ fn match_stat(stat: &Stat, new_value: u8) -> Stat {
 }
 
 fn choose_stats() -> [Stat; 6] {
-    pretty_print("You will need to choose the following stats...", BLUE, true);
-    pretty_print(&Stat::list(), PURPLE, true);
+    pretty_print(
+        &format!("You will need to provide values for {}...", &Stat::list()),
+        BLUE,
+        true,
+    );
+
     let mut result = [
         Stat::Str(0),
         Stat::Dex(0),
@@ -246,24 +239,22 @@ fn choose_stats() -> [Stat; 6] {
         Stat::Chr(0),
     ];
     for stat in &mut result {
-        loop {
-            pretty_print(
-                &format!("Enter a value for {}: ", stat.show_name()),
-                BLUE,
-                false,
-            );
-            let mut stat_value = String::from("");
-            match io::stdin().read_line(&mut stat_value) {
-                Ok(_) => match stat_value.trim().parse::<u8>().unwrap_or(21) {
-                    x if (1..=20).contains(&x) => {
-                        *stat = match_stat(&stat, x);
-                        break;
-                    }
-                    _ => continue,
-                },
-                Err(_) => continue,
-            }
-        }
+        let prompt = format!("Enter a value for {}:", stat.show_name());
+        let stat_input: String = Input::with_theme(&ColorfulTheme::default())
+            .with_prompt(&prompt)
+            .default(String::from("10"))
+            .show_default(true)
+            .validate_with(|input: &String| -> Result<(), &str> {
+                if is_valid_level(&input) {
+                    Ok(())
+                } else {
+                    Err("That is not a valid stat range")
+                }
+            })
+            .interact_text()
+            .unwrap();
+        let stat_value: u8 = stat_input.parse().unwrap();
+        *stat = match_stat(&stat, stat_value);
     }
     result
 }

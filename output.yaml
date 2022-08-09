@@ -1,29 +1,29 @@
 ---
 character:
-  name: Bella
-  level: 5
-  background: FolkHero
+  name: Tessele
+  level: 10
+  background: Acolyte
   race:
-    Gnome: Rock
+    Human: Standard
   class:
-    Wizard: Divination
+    Monk: AstralSelf
   stats:
     - Str: 10
-    - Dex: 10
-    - Con: 10
-    - Int: 10
-    - Wis: 10
-    - Chr: 10
+    - Dex: 16
+    - Con: 12
+    - Int: 8
+    - Wis: 16
+    - Chr: 8
   status:
-    armor_class: 10
+    armor_class: 16
     conditions: None
     blessed: false
-    initiative: 0
-    hit_dice: D6
-    current_hp: 16
-    maximum_hp: 16
-    speed: 25
-  gender: Female
-created_at: "2022-08-08T18:51:44.400526Z"
-updated_at: "2022-08-08T18:51:44.400530Z"
-last_played_at: "2022-08-08T18:51:44.400531Z"
+    initiative: 3
+    hit_dice: D8
+    current_hp: 64
+    maximum_hp: 64
+    speed: 30
+  gender: None
+created_at: "2022-08-09T16:51:26.489827Z"
+updated_at: "2022-08-09T16:51:26.489831Z"
+last_played_at: "2022-08-09T16:51:26.489831Z"
