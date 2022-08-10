@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use term_table::{
@@ -5,6 +7,8 @@ use term_table::{
     table_cell::{Alignment, TableCell},
     Table, TableStyle,
 };
+
+use crate::data::utils::{pretty_print, BLUE};
 
 use super::{background::Background, classes::Class, gender::Gender, races::Race, stats::Stat};
 
@@ -114,15 +118,25 @@ impl Status {
                 Dice::D12 => 7,
                 _ => panic!("Somehow you don't have a d6, d8, d10, or d12 as your Hit Dice"),
             };
-            println!(
-                "HP FIRST LEVEL: {}\nCON MODIFIER VALUE: {}\nHP PER LEVEL: {}\nLEVEL: {}\n",
-                hp_first_level, con_modifier, hp_per_level, level
+
+            pretty_print(&format!("\nHP at Lv.1: {}", hp_first_level), BLUE, true);
+            pretty_print(
+                &format!(
+                    "HP increases by {} each subsequent level.\n",
+                    con_modifier + hp_per_level
+                ),
+                BLUE,
+                true,
             );
+
             hp_first_level + ((con_modifier + hp_per_level) * (*level - 1) as i8)
         } else {
             let mut hp_to_add = 0;
             let mut rng = thread_rng();
-            for _ in 1..*level {
+
+            pretty_print(&format!("\nHP at Lv.1: {}", hp_first_level), BLUE, true);
+
+            for lv in 1..*level {
                 let inc = match hit_dice {
                     Dice::D6 => rng.gen_range(1..=6),
                     Dice::D8 => rng.gen_range(1..=8),
@@ -130,14 +144,29 @@ impl Status {
                     Dice::D12 => rng.gen_range(1..=12),
                     _ => panic!("Somehow you don't have a d6, d8, d10, or d12 as your Hit Dice"),
                 };
-                println!(
-                    "HP TO ADD: {}\nINC: {}\nCON MOD VALUE: {}\nHP TO ADD (AFTER): {}\n",
-                    hp_to_add,
-                    inc,
-                    con_modifier,
-                    inc + con_modifier
+                // println!(
+                //     "HP TO ADD: {}\nINC: {}\nCON MOD VALUE: {}\nHP TO ADD (AFTER): {}\n",
+                //     hp_to_add,
+                //     inc,
+                //     con_modifier,
+                //     inc + con_modifier
+                // );
+                hp_to_add += inc + con_modifier;
+                pretty_print(
+                    &format!(
+                        "\nYou rolled {}! [{}{}]\nHP at Lv.{}: {}",
+                        inc,
+                        match con_modifier.cmp(&0) {
+                            Ordering::Greater => "+",
+                            _ => "",
+                        },
+                        con_modifier,
+                        lv + 1,
+                        hp_first_level + hp_to_add
+                    ),
+                    BLUE,
+                    true,
                 );
-                hp_to_add += inc + con_modifier
             }
             hp_first_level + hp_to_add
         };
