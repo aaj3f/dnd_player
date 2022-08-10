@@ -2,3 +2,4 @@
 test.yaml
 output.yaml
 .DS_Store
+db/*
