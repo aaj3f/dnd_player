@@ -12,7 +12,7 @@ use std::{
 };
 use strum::IntoEnumIterator;
 
-pub const PURPLE: Color = Color::Rgb {
+pub const _PURPLE: Color = Color::Rgb {
     r: 183,
     g: 117,
     b: 214,

@@ -1,29 +1,29 @@
 ---
 character:
-  name: Tessele
-  level: 10
-  background: Acolyte
+  name: Osswald
+  level: 8
+  background: Criminal
   race:
-    Human: Standard
+    Human: Variant
   class:
-    Monk: AstralSelf
+    Monk: Mercy
   stats:
     - Str: 10
     - Dex: 16
     - Con: 12
     - Int: 8
     - Wis: 16
-    - Chr: 8
+    - Chr: 10
   status:
     armor_class: 16
     conditions: None
     blessed: false
     initiative: 3
     hit_dice: D8
-    current_hp: 64
-    maximum_hp: 64
+    current_hp: 51
+    maximum_hp: 51
     speed: 30
-  gender: None
-created_at: "2022-08-09T16:51:26.489827Z"
-updated_at: "2022-08-09T16:51:26.489831Z"
-last_played_at: "2022-08-09T16:51:26.489831Z"
+  gender: Male
+created_at: "2022-08-10T15:21:13.122930Z"
+updated_at: ~
+last_played_at: "2022-08-10T15:21:13.122953Z"

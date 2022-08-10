@@ -1,4 +1,5 @@
 mod data;
+mod state;
 
 use chrono::prelude::*;
 use data::background::*;
@@ -13,8 +14,8 @@ use dialoguer::theme::ColorfulTheme;
 use dialoguer::Confirm;
 use dialoguer::Input;
 use rand::prelude::*;
-use serde::{Deserialize, Deserializer, Serialize};
 use serde_yaml;
+use state::play_object::PlayObject;
 use std::fmt::Display;
 use std::{
     fs,
@@ -22,46 +23,7 @@ use std::{
     thread, time,
 };
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-struct PlayObject {
-    character: Character,
-    #[serde(deserialize_with = "de_created_at", default = "empty_datetime")]
-    created_at: DateTime<Utc>,
-    #[serde(deserialize_with = "de_updated_at", default = "empty_updated_at")]
-    updated_at: Option<DateTime<Utc>>,
-    #[serde(skip_deserializing, default = "empty_datetime")]
-    last_played_at: DateTime<Utc>,
-}
-
-fn empty_datetime() -> DateTime<Utc> {
-    Utc::now()
-}
-
-fn empty_updated_at() -> Option<DateTime<Utc>> {
-    None
-}
-
-fn de_created_at<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let s = String::deserialize(deserializer)?;
-    match Utc.datetime_from_str(&s, "%a %b %e %T %Y") {
-        Ok(utc) => Ok(utc),
-        Err(_) => Ok(Utc::now()),
-    }
-}
-
-fn de_updated_at<'de, D>(deserializer: D) -> Result<Option<DateTime<Utc>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let s = String::deserialize(deserializer)?;
-    match Utc.datetime_from_str(&s, "%a %b %e %T %Y") {
-        Ok(utc) => Ok(Some(utc)),
-        Err(_) => Ok(None),
-    }
-}
+use crate::state::play_state::PlayState;
 
 // impl PlayObject {
 //     fn new<T>(serde_object: T) -> PlayObject
@@ -198,7 +160,7 @@ fn choose_level() -> u8 {
 
 fn choose_average_dice() -> bool {
     let choice = Confirm::with_theme(&ColorfulTheme::default())
-        .with_prompt("\nWould you like to calculate your player's HP with the average of your hit dice? ('NO' will roll for each new level)")
+        .with_prompt("Would you like to calculate your player's HP with the average of your hit dice? ('NO' will roll for each new level)")
         .default(true)
         .show_default(false)
         .wait_for_newline(true)
@@ -256,6 +218,7 @@ fn choose_stats() -> [Stat; 6] {
         let stat_value: u8 = stat_input.parse().unwrap();
         *stat = match_stat(&stat, stat_value);
     }
+    println!("\n");
     result
 }
 
@@ -274,58 +237,25 @@ fn create_new_character() -> PlayObject {
         Race::Gnome(_) => race.choose_subrace(),
         _ => race,
     };
-    // let race: Race = match race {
-    //     Race::Dwarf(_) => choose_subrace(Dwarf::iter().collect()),
-    //     Race::Elf(_) => choose_subrace(Elf::iter().collect()),
-    //     Race::Halfling(_) => choose_subrace(Halfling::iter().collect()),
-    //     Race::Human(_) => choose_subrace(Human::iter().collect()),
-    //     Race::Gnome(_) => choose_subrace(Gnome::iter().collect()),
-    //     _ => race,
-    // };
 
     let gender = Gender::choose();
-    // println!("GENDER: {:?}", &gender);
 
     let name = choose_name(&race, &gender);
-    // println!("NAME: {}", &name);
 
     let mut class = Class::choose();
-    // println!("CLASS: {:?}", &class);
-
-    let background = Background::choose();
-    // println!("BACKGROUND: {:?}", &background);
 
     let level: u8 = choose_level();
-    // println!("LEVEL: {}", &level);
 
     if level > 2 {
         class = class.choose_subclass();
-        //TODO: add subclass to PlayObject
     }
 
+    let background = Background::choose();
+
     let stats: [Stat; 6] = choose_stats();
-    // println!("STATS: {:?}", &stats);
 
-    // pretty_print("\nDo you want to enter your character's stats?", BLUE, true);
-    // pretty_print("(press ENTER to default to 'NO'):", PURPLE, true);
-    // thread::sleep(one_second);
-
-    /*
-    Have you already determined your character's stats, or would you like to use a stat calculator?
-    - ALREADY KNOW
-        Do you want to verify that you've correctly allocated
-    - CALCULATOR
-    */
-
-    // let stats = [
-    //     Stat::Str(10),
-    //     Stat::Dex(18),
-    //     Stat::Con(14),
-    //     Stat::Int(8),
-    //     Stat::Wis(16),
-    //     Stat::Chr(8),
-    // ];
     let use_average_dice = choose_average_dice();
+
     let status = Status::new(&stats, &race, &class, &level, use_average_dice);
 
     let character = Character {
@@ -389,7 +319,13 @@ fn main() -> Result<(), serde_yaml::Error> {
     //     last_played_at: Utc::now(),
     // };
 
-    let data = fs::read_to_string("./test.yaml").expect("Unable to read file");
+    let data = match fs::read_to_string("./output.yaml") {
+        Ok(s) => s,
+        Err(_) => {
+            pretty_print("No character data found on file.", RED, true);
+            String::from("")
+        }
+    };
     // let data = fs::read_to_string("./bad_test.yaml").expect("Unable to read file");
     println!("{}", data);
 
@@ -409,10 +345,17 @@ fn main() -> Result<(), serde_yaml::Error> {
     };
 
     let s = serde_yaml::to_string(&play_object)?;
-    println!("{:?}", s);
+    // println!("{:?}", s);
     fs::write("./output.yaml", &s).expect("Unable to write file");
 
     play_object.character.display(true);
+
+    let mut play_state = PlayState::new(play_object);
+
+    while play_state.active {
+        play_state.take_turn()
+    }
+
     Ok(())
 }
 
