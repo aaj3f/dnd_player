@@ -30,6 +30,8 @@ pub const RED: Color = Color::Rgb {
     b: 54,
 };
 
+pub static LEDGER_URL: &str = "http://localhost:8090/fdb/test/ledger";
+
 pub fn pretty_print(string: &str, color: Color, newline: bool) {
     let newline = match newline {
         true => "\n",

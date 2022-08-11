@@ -287,7 +287,8 @@ fn load_character_or_new(play_object: PlayObject) -> PlayObject {
     }
 }
 
-fn main() -> Result<(), serde_yaml::Error> {
+#[tokio::main]
+async fn main() -> Result<(), serde_yaml::Error> {
     // let stats = [
     //     Stat::Str(10),
     //     Stat::Dex(18),
@@ -353,7 +354,7 @@ fn main() -> Result<(), serde_yaml::Error> {
     let mut play_state = PlayState::new(play_object);
 
     while play_state.active {
-        play_state.take_turn()
+        play_state.take_turn().await
     }
 
     Ok(())

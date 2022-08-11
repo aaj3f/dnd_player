@@ -10,7 +10,10 @@ use term_table::{
 
 use crate::data::utils::{pretty_print, BLUE};
 
-use super::{background::Background, classes::Class, gender::Gender, races::Race, stats::Stat};
+use super::{
+    background::Background, classes::Class, gender::Gender, races::Race, spell::SpellSlot,
+    stats::Stat,
+};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 enum Condition {
@@ -40,6 +43,8 @@ pub struct Status {
     current_hp: i8,
     maximum_hp: i8,
     speed: u16,
+    available_spell_slots: Vec<u8>,
+    pub current_spell_slots: Vec<SpellSlot>,
 }
 
 fn calculate_ac(stats: &[Stat], class: &Class) -> i8 {
@@ -62,6 +67,76 @@ fn calculate_speed(race: &Race) -> u16 {
     }
 }
 
+fn calculate_spell_slots(class: &Class, level: &u8) -> Vec<u8> {
+    match class {
+        Class::Artificer(_) => match level {
+            1 | 2 => vec![1, 1],
+            3 | 4 => vec![1, 1, 1],
+            5 | 6 => vec![1, 1, 1, 1, 2, 2],
+            7 | 8 => vec![1, 1, 1, 1, 2, 2, 2],
+            9 | 10 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3],
+            11 | 12 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3],
+            13 | 14 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4],
+            15 | 16 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4],
+            17 | 18 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5],
+            19 | 20 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5],
+            _ => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5],
+        },
+        Class::Barbarian(_) | Class::Fighter(_) | Class::Monk(_) | Class::Rogue(_) => match level {
+            _ => vec![0],
+        },
+        Class::Bard(_)
+        | Class::Cleric(_)
+        | Class::Druid(_)
+        | Class::Sorcerer(_)
+        | Class::Wizard(_) => match level {
+            1 => vec![1, 1],
+            2 => vec![1, 1, 1],
+            3 => vec![1, 1, 1, 1, 2, 2],
+            4 => vec![1, 1, 1, 1, 2, 2, 2],
+            5 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3],
+            6 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3],
+            7 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4],
+            8 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4],
+            9 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5],
+            10 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5],
+            11 | 12 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6],
+            13 | 14 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 7],
+            15 | 16 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 7, 8],
+            17 | 18 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 7, 8, 9],
+            19 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 8, 9],
+            20 => vec![
+                1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9,
+            ],
+            _ => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 7, 7, 8, 9],
+        },
+        Class::Paladin(_) | Class::Ranger(_) => match level {
+            1 => vec![0],
+            2 => vec![1, 1],
+            3 | 4 => vec![1, 1, 1],
+            5 | 6 => vec![1, 1, 1, 1, 2, 2],
+            7 | 8 => vec![1, 1, 1, 1, 2, 2, 2],
+            9 | 10 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3],
+            11 | 12 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3],
+            13 | 14 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4],
+            15 | 16 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4],
+            17 | 18 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5],
+            19 | 20 => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5],
+            _ => vec![1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5],
+        },
+        Class::Warlock(_) => match level {
+            1 => vec![1],
+            2 => vec![1, 1],
+            3 | 4 => vec![2, 2],
+            5 | 6 => vec![3, 3],
+            7 | 8 => vec![4, 4],
+            9 | 10 => vec![5, 5],
+            11..=16 => vec![5, 5, 5],
+            17..=20 => vec![5, 5, 5, 5],
+            _ => vec![5, 5, 5, 5],
+        },
+    }
+}
 impl Status {
     pub fn new(
         stats: &[Stat],
@@ -85,6 +160,7 @@ impl Status {
             Class::Warlock(_) => Dice::D8,
             Class::Wizard(_) => Dice::D6,
         };
+        let spell_slots = calculate_spell_slots(class, level);
         let status = Status {
             armor_class: calculate_ac(stats, class),
             conditions: Condition::None,
@@ -94,6 +170,8 @@ impl Status {
             current_hp: 10,
             maximum_hp: 10,
             speed: calculate_speed(race),
+            available_spell_slots: spell_slots.clone(),
+            current_spell_slots: SpellSlot::from_vec(spell_slots),
         };
         status.calculate_hp(level, stats[2].get_modifier(), use_average_dice)
     }

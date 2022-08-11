@@ -4,5 +4,6 @@ pub mod classes;
 pub mod gender;
 pub mod names;
 pub mod races;
+pub mod spell;
 pub mod stats;
 pub mod utils;
